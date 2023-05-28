@@ -16,9 +16,26 @@
         :String tctFile "${directory}/tct.txt"
     ])
 
-(function loadDirectory [directory]
-    // TODO
-    )
+(function :FileConversionProject loadDirectory [directory]
+    (let [tctFile "${directory}/tct.txt"
+            stream (Stream.fromFile tctFile)
+            [inExtension outExtension outBlockTerminator]
+                (for thing ["inExtension" "outExtension" "outBlockTerminator"]
+                    (stream.expect thing ->(stream.takeUntilAndDrop "|||")))
+            blockLines
+                {
+                    (stream.dropWhitespace)
+                    (filter (stream.content.split "\n"))
+                }]
+        
+        (new FileConversionProject directory inExtension outExtension outBlockTerminator
+            (for blockLine blockLines
+                (let [[id lockedStr] (blockLine.split " ")]
+                    (object
+                        id id
+                        locked (= lockedStr "true")
+                        inText (File.getContent "${directory}/blocks/${id}.${inExtension}")
+                        outText (File.getContent "${directory}/blocks/${id}.${outExtension}")))))))
 
 (function importFile [:String inFile :String outExtension :String inBlockDelimiter :String outBlockTerminator]
     (let [inExtension (inFile.extension)

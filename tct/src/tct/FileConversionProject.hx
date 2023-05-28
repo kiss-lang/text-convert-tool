@@ -2,6 +2,7 @@ package tct;
 
 import kiss.Prelude;
 import kiss.List;
+import kiss.Stream;
 
 import uuid.Uuid;
 

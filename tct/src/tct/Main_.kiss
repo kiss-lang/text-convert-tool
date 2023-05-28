@@ -16,5 +16,11 @@
     (Sys.setCwd "${cwd}/test")
     (FileConversionProject.importFile "test.in" "out" "\n\n" "\n")
     (assert (FileSystem.exists "test.tct/tct.txt"))
+    
+    // Load the imported project and inspect it
+    (let [project (FileConversionProject.loadDirectory "test.tct")]
+        (assertEquals "here\n\n" .inText (first project.blocks))
+        (assertEquals "there" .inText (second project.blocks)))
+
     (rmrf "test.tct")
     (Sys.setCwd cwd))
