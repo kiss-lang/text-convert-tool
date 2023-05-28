@@ -1,0 +1,15 @@
+{
+    "name": "tct",
+    "url": "https://github.com/kiss-lang/text-convert-tool",
+    "license": "LGPL",
+    "tags": [],
+    "description": "",
+    "version": "0.0.0",
+    "releasenote": "",
+    "contributors": ["NQNStudios"],
+    "classPath": "src/",
+    "main": "tct.Main",
+    "dependencies": {
+        "kiss": ""
+    }
+}
