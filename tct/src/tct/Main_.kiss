@@ -1,1 +1,20 @@
-(print "Hello world!")
+(import sys.io.File)
+(import sys.FileSystem)
+
+(function rmrf [directory]
+    (walkDirectory "" directory ->file (FileSystem.deleteFile file) null ->dir (FileSystem.deleteDirectory dir))
+    (FileSystem.deleteDirectory directory))
+
+// Test import file in a folder:
+(FileConversionProject.importFile "test/test.in" "out" "\n\n" "\n")
+(assert (FileSystem.exists "test/test.tct/tct.txt"))
+(assertEquals (File.getContent "test/test.in") (File.getContent "test/test.tct/test.in"))
+(rmrf "test/test.tct")
+
+// Test import file in current directory:
+(let [cwd (Sys.getCwd)]
+    (Sys.setCwd "${cwd}/test")
+    (FileConversionProject.importFile "test.in" "out" "\n\n" "\n")
+    (assert (FileSystem.exists "test.tct/tct.txt"))
+    (rmrf "test.tct")
+    (Sys.setCwd cwd))

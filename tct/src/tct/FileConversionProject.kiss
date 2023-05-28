@@ -1,0 +1,65 @@
+(defNew &private 
+    [
+        &prop :String directory
+        &prop :String inExtension
+        &prop :String outExtension
+        &prop :String outBlockTerminator
+        &prop :Array<Block> blocks
+        // TODO store an array of undo history i.e. EditBlock(id, inFrom, inTo, outFrom, outTo)
+        //                                          InsertBlock(idx, id)
+        //                                          EditBlockStatus(id, status),
+    ]
+    [
+        :String inFile "${directory}/$(.withoutExtension (directory.withoutDirectory)).${inExtension}"
+        :String outFile "${directory}/$(.withoutExtension (directory.withoutDirectory)).${outExtension}"
+        :String blockDir "${directory}/blocks"
+        :String tctFile "${directory}/tct.txt"
+    ])
+
+(function loadDirectory [directory]
+    // TODO
+    )
+
+(function importFile [:String inFile :String outExtension :String inBlockDelimiter :String outBlockTerminator]
+    (let [inExtension (inFile.extension)
+            content (File.getContent inFile)
+            inBlockContent (content.split inBlockDelimiter)]
+        (.fullSave
+            (new FileConversionProject
+                "$(inFile.withoutExtension).tct"
+                inExtension
+                outExtension
+                outBlockTerminator
+                (for [idx section] (enumerate inBlockContent)
+                    (when (= idx (- inBlockContent.length 1))
+                        (set inBlockDelimiter ""))
+                    (object 
+                        id (Uuid.v4)
+                        inText "${section}${inBlockDelimiter}"
+                        outText ""
+                        locked false))))))
+
+(method :FileConversionProject fullSave []
+    (unless (and (FileSystem.exists directory) (FileSystem.isDirectory directory))
+        (FileSystem.createDirectory directory))
+
+    (unless (and (FileSystem.exists blockDir) (FileSystem.isDirectory blockDir))
+        (FileSystem.createDirectory blockDir))
+
+    (let [&mut tctContent ""]
+        (+= tctContent "${inExtension}|||${outExtension}|||${outBlockTerminator}|||\n")
+        (doFor block blocks
+            (+= tctContent "${block.id} ${block.locked}\n")
+            (File.saveContent tctFile tctContent)))
+
+    (doFor block blocks
+        (File.saveContent "${blockDir}/${block.id}.${inExtension}" block.inText)
+        (File.saveContent "${blockDir}/${block.id}.${outExtension}" block.outText))
+
+    (File.saveContent inFile
+        (.join (for block blocks block.inText) ""))
+
+    (File.saveContent outFile
+        (.join (for block blocks block.outText) ""))
+
+    this)
