@@ -1,7 +1,7 @@
 package tct;
 
-class Main {
+class TestMain {
     static function main() {
-        Main_.main();
+        TestMain_.main();
     }
 }
