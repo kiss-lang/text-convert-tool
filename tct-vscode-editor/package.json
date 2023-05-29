@@ -1,6 +1,6 @@
 {
 	"main": "bin/extension.js",
-	"name": "",
+	"name": "tct-vscode-editor",
 	"description": "",
 	"repository": {
 		"url": "",
@@ -19,5 +19,8 @@
 	},
 	"version": "0.0.0",
 	"activationEvents": [],
-	"displayName": ""
+	"displayName": "",
+	"dependencies": {
+		"monaco-editor": "^0.38.0"
+	}
 }

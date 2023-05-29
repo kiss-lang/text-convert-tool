@@ -1,0 +1,4 @@
+-lib kiss
+-cp ${SCOPE_DIR}/../tct/src/
+-D tct=0.0.0
+--macro Sys.println("haxe_libraries/tct.hxml:3: [Warning] Using dev version of library tct")
