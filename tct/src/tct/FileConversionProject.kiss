@@ -5,9 +5,6 @@
         &prop :String outExtension
         &prop :String outBlockTerminator
         &prop :Array<Block> blocks
-        // TODO store an array of undo history i.e. EditBlock(id, inFrom, inTo, outFrom, outTo)
-        //                                          InsertBlock(idx, id)
-        //                                          EditBlockStatus(id, status),
     ]
     [
         :String inFile "${directory}/$(.withoutExtension (directory.withoutDirectory)).${inExtension}"
@@ -94,8 +91,21 @@
 (prop :Array<ChangeRecord> changeHistory [])
 (prop &mut :Array<ChangeRecord> undoHistory [])
 
-// TODO undoChange
-// TODO redoChange
+(method :Bool undoChange []
+    (whenLet [lastChange (changeHistory.pop)
+                reverseChange (_invertChange lastChange)]
+        (_applyChange reverseChange)
+        (changeHistory.pop)
+        (undoHistory.push reverseChange)
+        (return true))
+    false)
+
+(method :Bool redoChange []
+    (whenLet [lastUndo (undoHistory.pop)
+                redo (_invertChange lastUndo)]
+        (_applyChange redo)
+        (return true))
+    false)
 
 (method :Bool _applyChange [:ChangeRecord change]
     (case change
@@ -117,6 +127,16 @@
         (never otherwise))
     (changeHistory.push change)
     true)
+
+(method :ChangeRecord _invertChange [:ChangeRecord change]
+    (case change
+        ((objectWith [type Insert] blockIndex newBlock)
+            (objectWith [type Delete oldBlock newBlock] blockIndex))
+        ((objectWith [type Delete] blockIndex oldBlock)
+            (objectWith [type Insert newBlock oldBlock] blockIndex))
+        ((objectWith [type Edit] blockIndex oldBlock newBlock)
+            (objectWith [type Edit oldBlock newBlock newBlock oldBlock] blockIndex))
+        (never otherwise)))
 
 (method insertBlock [index &opt :String inText :String outText :Bool locked]
     (_applyChange (object

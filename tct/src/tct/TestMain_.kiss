@@ -46,7 +46,24 @@
         // Test trying to edit locked block
         (assert !(project.editBlock 2 "edit" "locked block"))
         (project.toggleLock 2)
-        (assert (project.deleteBlock 2)))
+        (assert (project.deleteBlock 2))
+        (assertExportContents project "here\n\nnot " "!")
+        
+        // Test undo/redo delete
+        (project.undoChange)
+        (assertExportContents project "here\n\nnot here" "!!!!")
+        (project.redoChange)
+        (assertExportContents project "here\n\nnot " "!")
+
+        (project.undoChange)
+        (project.undoChange)
+        
+        // Test undo/redo edit:
+        (assert (project.undoChange))
+        (assertExportContents project "here\n\nnot there" "!")
+        (project.redoChange)
+        (assertExportContents project "here\n\nnot here" "!!!!")
+        )
 
     (rmrf "test.tct")
     (Sys.setCwd cwd))
