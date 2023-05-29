@@ -1,0 +1,29 @@
+name: CI
+
+on: push
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      # lix
+      - uses: lix-pm/setup-lix@master
+        with:
+          lix-version: 15.12.0
+      
+      - run: lix download
+        working-directory: ./tct
+      
+      # run the build:
+      - run: ./test.sh
+        shell: bash
+        working-directory: ./tct
+      
