@@ -13,7 +13,7 @@
 // Test import file in a folder:
 (FileConversionProject.importFile "test/test.in" "out" "\n\n" "\n")
 (assert (FileSystem.exists "test/test.tct/tct.txt"))
-(assertEquals (File.getContent "test/test.in") (File.getContent "test/test.tct/test.in"))
+(assertEquals (StringTools.replace (File.getContent "test/test.in") "\r" "") (File.getContent "test/test.tct/test.in"))
 (rmrf "test/test.tct")
 
 // Test import file in current directory:
