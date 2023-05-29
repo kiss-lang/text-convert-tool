@@ -5,6 +5,11 @@
     (walkDirectory "" directory ->file (FileSystem.deleteFile file) null ->dir (FileSystem.deleteDirectory dir))
     (FileSystem.deleteDirectory directory))
 
+(function assertExportContents [:FileConversionProject project :String inTextFull :String outTextFull]
+    (project.fullSave)
+    (assert (= inTextFull (File.getContent project.inFile)))
+    (assert (= outTextFull (File.getContent project.outFile))))
+
 // Test import file in a folder:
 (FileConversionProject.importFile "test/test.in" "out" "\n\n" "\n")
 (assert (FileSystem.exists "test/test.tct/tct.txt"))
@@ -20,7 +25,13 @@
     // Load the imported project and inspect it
     (let [project (FileConversionProject.loadDirectory "test.tct")]
         (assertEquals "here\n\n" .inText (first project.blocks))
-        (assertEquals "there" .inText (second project.blocks)))
+        (assertEquals "there" .inText (second project.blocks))
+        
+        // Test block insertion
+        (project.insertBlock 0 "not " "!")
+        (project.insertBlock 2 "not " "!")
+        (assertExportContents project "not here\n\nnot there" "!!")
+        )
 
     (rmrf "test.tct")
     (Sys.setCwd cwd))

@@ -17,5 +17,18 @@ typedef Block = {
     locked:Bool
 };
 
+enum ChangeType {
+    Insert;
+    Delete;
+    Edit;
+}
+
+typedef ChangeRecord = {
+    type: ChangeType,
+    blockIndex: Int,
+    ?oldBlock:Block,
+    ?newBlock:Block
+};
+
 @:build(kiss.Kiss.build())
 class FileConversionProject {}

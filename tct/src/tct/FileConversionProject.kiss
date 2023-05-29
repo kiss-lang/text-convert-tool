@@ -56,6 +56,17 @@
                         outText ""
                         locked false))))))
 
+(method :Void saveTctFile []
+    (let [&mut tctContent ""]
+        (+= tctContent "${inExtension}|||${outExtension}|||${outBlockTerminator}|||\n")
+        (doFor block blocks
+            (+= tctContent "${block.id} ${block.locked}\n")
+            (File.saveContent tctFile tctContent))))
+
+(method :Void saveBlock [:Block block]
+    (File.saveContent "${blockDir}/${block.id}.${inExtension}" block.inText)
+    (File.saveContent "${blockDir}/${block.id}.${outExtension}" block.outText))
+
 (method :FileConversionProject fullSave []
     (unless (and (FileSystem.exists directory) (FileSystem.isDirectory directory))
         (FileSystem.createDirectory directory))
@@ -63,15 +74,10 @@
     (unless (and (FileSystem.exists blockDir) (FileSystem.isDirectory blockDir))
         (FileSystem.createDirectory blockDir))
 
-    (let [&mut tctContent ""]
-        (+= tctContent "${inExtension}|||${outExtension}|||${outBlockTerminator}|||\n")
-        (doFor block blocks
-            (+= tctContent "${block.id} ${block.locked}\n")
-            (File.saveContent tctFile tctContent)))
+    (saveTctFile)
 
     (doFor block blocks
-        (File.saveContent "${blockDir}/${block.id}.${inExtension}" block.inText)
-        (File.saveContent "${blockDir}/${block.id}.${outExtension}" block.outText))
+        (saveBlock block))
 
     (File.saveContent inFile
         (.join (for block blocks block.inText) ""))
@@ -80,3 +86,28 @@
         (.join (for block blocks block.outText) ""))
 
     this)
+
+(prop :Array<ChangeRecord> changeHistory [])
+(prop &mut :Array<ChangeRecord> undoHistory [])
+
+// TODO undoChange
+// TODO redoChange
+
+(method applyChange [:ChangeRecord change]
+    (case change
+        ((objectWith [type Insert] blockIndex newBlock)
+            (blocks.insert blockIndex newBlock)
+            (saveTctFile)
+            (saveBlock newBlock))
+        (never otherwise))
+    (changeHistory.push change))
+
+(method insertBlock [index &opt :String inText :String outText block :Bool locked]
+    (applyChange (object
+                    type Insert
+                    blockIndex index
+                    newBlock (object
+                                id (Uuid.v4)
+                                inText (or inText "")
+                                outText (or outText "")
+                                locked ?locked))))
