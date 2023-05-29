@@ -36,7 +36,7 @@
 
 (function importFile [:String inFile :String outExtension :String inBlockDelimiter :String outBlockTerminator]
     (let [inExtension (inFile.extension)
-            content (File.getContent inFile)
+            content (StringTools.replace (File.getContent inFile) "\r" "")
             inBlockContent (content.split inBlockDelimiter)]
         (.fullSave
             (new FileConversionProject
