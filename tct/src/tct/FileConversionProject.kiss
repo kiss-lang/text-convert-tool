@@ -56,16 +56,20 @@
                         outText ""
                         locked false))))))
 
-(method :Void saveTctFile []
+(method :Void _saveTctFile []
     (let [&mut tctContent ""]
         (+= tctContent "${inExtension}|||${outExtension}|||${outBlockTerminator}|||\n")
         (doFor block blocks
             (+= tctContent "${block.id} ${block.locked}\n")
             (File.saveContent tctFile tctContent))))
 
-(method :Void saveBlock [:Block block]
+(method :Void _saveBlock [:Block block]
     (File.saveContent "${blockDir}/${block.id}.${inExtension}" block.inText)
     (File.saveContent "${blockDir}/${block.id}.${outExtension}" block.outText))
+
+(method :Void _deleteBlock [:Block block]
+    (FileSystem.deleteFile "${blockDir}/${block.id}.${inExtension}")
+    (FileSystem.deleteFile "${blockDir}/${block.id}.${outExtension}"))
 
 (method :FileConversionProject fullSave []
     (unless (and (FileSystem.exists directory) (FileSystem.isDirectory directory))
@@ -74,10 +78,10 @@
     (unless (and (FileSystem.exists blockDir) (FileSystem.isDirectory blockDir))
         (FileSystem.createDirectory blockDir))
 
-    (saveTctFile)
+    (_saveTctFile)
 
     (doFor block blocks
-        (saveBlock block))
+        (_saveBlock block))
 
     (File.saveContent inFile
         (.join (for block blocks block.inText) ""))
@@ -93,17 +97,29 @@
 // TODO undoChange
 // TODO redoChange
 
-(method applyChange [:ChangeRecord change]
+(method :Bool _applyChange [:ChangeRecord change]
     (case change
         ((objectWith [type Insert] blockIndex newBlock)
             (blocks.insert blockIndex newBlock)
-            (saveTctFile)
-            (saveBlock newBlock))
+            (_saveTctFile)
+            (_saveBlock newBlock))
+        ((objectWith [type Delete] blockIndex oldBlock)
+            (when .locked (nth blocks blockIndex) (return false))
+            (blocks.splice blockIndex 1)
+            (_saveTctFile)
+            (_deleteBlock oldBlock))
+        ((objectWith [type Edit] blockIndex oldBlock newBlock)
+            (when (and oldBlock.locked newBlock.locked)
+                (return false))
+            (setNth blocks blockIndex newBlock)
+            (_saveTctFile)
+            (_saveBlock newBlock))
         (never otherwise))
-    (changeHistory.push change))
+    (changeHistory.push change)
+    true)
 
-(method insertBlock [index &opt :String inText :String outText block :Bool locked]
-    (applyChange (object
+(method insertBlock [index &opt :String inText :String outText :Bool locked]
+    (_applyChange (object
                     type Insert
                     blockIndex index
                     newBlock (object
@@ -111,3 +127,31 @@
                                 inText (or inText "")
                                 outText (or outText "")
                                 locked ?locked))))
+
+(method deleteBlock [index]
+    (_applyChange (object
+                    type Delete
+                    blockIndex index
+                    oldBlock (nth blocks index))))
+
+(method editBlock [index &opt :String newInText :String newOutText :Bool newLocked]
+    (let [oldBlock (nth blocks index)]
+        (when (isNull newInText) (set newInText oldBlock.inText))
+        (when (isNull newOutText) (set newOutText oldBlock.outText))
+        (when (isNull newLocked) (set newLocked oldBlock.locked))
+        (_applyChange (object
+                        type Edit
+                        blockIndex index
+                        oldBlock oldBlock
+                        newBlock (object
+                                    id oldBlock.id
+                                    inText newInText
+                                    outText newOutText
+                                    locked newLocked)))))
+
+(method isLocked [index]
+    .locked (nth blocks index))
+
+(method toggleLock [index]
+    (let [locked .locked (nth blocks index)]
+        (editBlock index null null !locked)))

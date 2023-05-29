@@ -7,8 +7,8 @@
 
 (function assertExportContents [:FileConversionProject project :String inTextFull :String outTextFull]
     (project.fullSave)
-    (assert (= inTextFull (File.getContent project.inFile)))
-    (assert (= outTextFull (File.getContent project.outFile))))
+    (assertEquals inTextFull (File.getContent project.inFile))
+    (assertEquals outTextFull (File.getContent project.outFile)))
 
 // Test import file in a folder:
 (FileConversionProject.importFile "test/test.in" "out" "\n\n" "\n")
@@ -31,7 +31,22 @@
         (project.insertBlock 0 "not " "!")
         (project.insertBlock 2 "not " "!")
         (assertExportContents project "not here\n\nnot there" "!!")
-        )
+        
+        // Test block deletion
+        (project.deleteBlock 0)
+        (assertExportContents project "here\n\nnot there" "!")
+        (assertEquals 6 .length (FileSystem.readDirectory "${project.directory}/blocks"))
+        
+        // Test block editing
+        (project.editBlock 2 "here" "!!!" true)
+        (assertExportContents project "here\n\nnot here" "!!!!")
+
+        // Test trying to delete locked block
+        (assert !(project.deleteBlock 2))
+        // Test trying to edit locked block
+        (assert !(project.editBlock 2 "edit" "locked block"))
+        (project.toggleLock 2)
+        (assert (project.deleteBlock 2)))
 
     (rmrf "test.tct")
     (Sys.setCwd cwd))
