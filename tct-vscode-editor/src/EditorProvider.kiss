@@ -1,0 +1,60 @@
+(loadFrom "kiss-vscode-api" "src/Util.kiss")
+
+// Based on https://github.com/microsoft/vscode-extension-samples/blob/main/custom-editor-sample/src/catScratchEditor.ts
+
+(function register [context]
+	(set Prelude.printStr ->s (infoMessage s))
+    (let [provider (new EditorProvider context)]
+        (Vscode.window.registerCustomEditorProvider "tct.splitView" provider)))
+
+(defNew [&prop :ExtensionContext context])
+
+(method :Promise<Void> resolveCustomTextEditor [:TextDocument document :WebviewPanel webviewPanel :CancellationToken _token]
+    (set webviewPanel.webview.options (object enableScripts true))
+    (set webviewPanel.webview.html (htmlForWebview webviewPanel.webview))
+    
+    (webviewPanel.webview.onDidReceiveMessage
+        ->:Void [e]
+            null)
+
+    (webviewPanel.onDidChangeViewState
+        ->e {
+            (unless e.webviewPanel.visible null)
+        })
+    null)
+
+(method :String htmlForWebview [:Webview webview]
+    (let [monacoDir
+				(Uri.joinPath (Uri.parse this.context.extensionUri) "node_modules" "monaco-editor" "min" "vs")
+			requireConfigDir
+				(webview.asWebviewUri monacoDir)
+			cssUri
+				(webview.asWebviewUri (Uri.joinPath monacoDir "editor" "editor.main.css"))
+			monacoLoaderUri
+				(webview.asWebviewUri (Uri.joinPath monacoDir "loader.js"))
+			monacoEditorNlsUri
+				(webview.asWebviewUri (Uri.joinPath monacoDir "editor" "editor.main.nls.js"))
+			monacoEditorUri
+				(webview.asWebviewUri (Uri.joinPath monacoDir "editor" "editor.main.js"))
+			editorScriptUri
+                (webview.asWebviewUri (Uri.joinPath (Uri.parse this.context.extensionUri) "bin" "editor.js"))]
+        "<!DOCTYPE html>
+			<html>
+			<head>
+				<meta charset=\"UTF-8\">
+				<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+				<link
+					rel=\"stylesheet\"
+					data-name=\"vs/editor/editor.main\"
+					href=\"${cssUri}\" />
+			</head>
+			<body>	
+				<script src=\"${editorScriptUri}\"></script>
+				<script>
+					var require = { paths: { vs: \"${requireConfigDir}\" } };
+				</script>
+				<script src=\"${monacoLoaderUri}\"></script>
+				<script src=\"${monacoEditorNlsUri}\"></script>
+				<script src=\"${monacoEditorUri}\"></script>
+			</body>
+			</html>"))

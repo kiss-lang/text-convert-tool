@@ -9,8 +9,24 @@
 	"homepage": "",
 	"categories": [],
 	"extensionPack": [],
+	"dependencies": {
+		"monaco-editor": "^0.38.0"
+	},
 	"publisher": "",
-	"contributes": {},
+	"contributes": {
+		"customEditors": [
+			{
+				"selector": [
+					{
+						"filenamePattern": "tct.txt"
+					}
+				],
+				"priority": "default",
+				"viewType": "tct.splitView",
+				"displayName": "TCT Split View"
+			}
+		]
+	},
 	"engines": {
 		"vscode": "^1.4.0"
 	},
@@ -19,8 +35,5 @@
 	},
 	"version": "0.0.0",
 	"activationEvents": [],
-	"displayName": "",
-	"dependencies": {
-		"monaco-editor": "^0.38.0"
-	}
+	"displayName": ""
 }
