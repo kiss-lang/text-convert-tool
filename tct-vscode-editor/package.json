@@ -14,6 +14,13 @@
 	},
 	"publisher": "",
 	"contributes": {
+		"keybindings": [
+			{
+				"command": "tct-vscode-editor.importTCTInputFile",
+				"mac": "Cmd+; Cmd+i",
+				"key": "Ctrl+; Ctrl+i"
+			}
+		],
 		"customEditors": [
 			{
 				"selector": [
@@ -24,6 +31,12 @@
 				"priority": "default",
 				"viewType": "tct.splitView",
 				"displayName": "TCT Split View"
+			}
+		],
+		"commands": [
+			{
+				"title": "tct-vscode-editor: Import a file to a new TCT file",
+				"command": "tct-vscode-editor.importTCTInputFile"
 			}
 		]
 	},

@@ -1,5 +1,6 @@
 -lib kiss-vscode-api
 -lib kiss
+-lib tct
 -lib bad-nlp
 -cp src
 -dce full

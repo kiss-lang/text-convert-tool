@@ -10,7 +10,21 @@
 
     // Add your extension's commands here with (defCommand <...>):
     // (defCommand context exampleCommand "An example command for your extension" "C-; C-1" [] (doSomething))
-    
+    (defCommand context importTCTInputFile "Import a file to a new TCT file" "C-; C-i" []
+        (awaitLet [uris (openDialog (object openLabel "Import" title "File to import as TCT input" canSelectMany false))
+                    outputType (inputBox (object prompt "Output file extension"))
+                    splitBy (quickPickMap [=>"↵ (new line)" "\n" =>"¶ (new paragraph)" "\n\n" =>"Other (specify via text box)" ""])]
+            (withValueOrInputBox splitBy
+                (awaitLet [outBlockTerminator (quickPickMap [=>"↵ (new line)" "\n" =>"¶ (new paragraph)" "\n\n" =>"Other (specify via text box)" ""])]
+                    (withValueOrInputBox outBlockTerminator
+                        (let [file .fsPath (first uris)
+                                outputType (if (outputType.startsWith ".") (outputType.substr 1) outputType)
+                                dir (file.directory)
+                                file (file.withoutDirectory)]
+                            (Sys.setCwd dir)
+                            (let [project (FileConversionProject.importFile file outputType splitBy outBlockTerminator)]
+                                (executeCommand "workbench.action.quickOpen" "${dir}/${project.tctFile}"))))))))
+
     // Add your extension's configuration here with (defConfiguration <...>):
     // (defConfiguration 
     //      :Bool configBool
