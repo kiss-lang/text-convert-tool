@@ -18,15 +18,30 @@
             (set e.innerHTML html)
             e))
 
-    (content.appendChild (createElement "p" "Hello editor html generation!"))
+    (localFunction initialize [:Array<Block> blocks]
+        (set tctBlocks blocks)
+        (let [pre (createElement "pre" "")
+                table (createElement "table" "")]
+            (doFor block blocks
+                (let [tr (createElement "tr" "")
+                        tdIn (createElement "td" "")
+                        tdOut (createElement "td" "")
+                        codeIn (createElement "code" block.inText)
+                        codeOut (createElement "code" block.outText)]
+                    (tdIn.appendChild codeIn)
+                    (tdOut.appendChild codeOut)
+                    (tr.appendChild tdIn)
+                    (tr.appendChild tdOut)
+                    (table.appendChild tr)))
+            (pre.appendChild table)
+            (content.appendChild pre)))
+
     (window.addEventListener "message"
         ->:Void event
             (let [:Message message (Json.parse event.data)]
                 (case message
                     ((Initialize blocks)
-                        (set tctBlocks blocks)
-                        (doFor block blocks
-                            (content.appendChild (createElement "p" block.inText))))
+                        (initialize blocks))
                     (otherwise null))))
 
     (set _vscode (EditorExterns.acquireVsCodeApi))

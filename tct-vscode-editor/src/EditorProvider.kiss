@@ -58,6 +58,14 @@
 					rel=\"stylesheet\"
 					data-name=\"vs/editor/editor.main\"
 					href=\"${cssUri}\" />
+				<style>
+					table,
+					th,
+					td {
+						border: 1px solid black;
+						border-collapse: collapse;
+					}
+				</style>
 			</head>
 			<body>	
 				<script src=\"${editorScriptUri}\"></script>
