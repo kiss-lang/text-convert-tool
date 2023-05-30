@@ -2,6 +2,7 @@
 -lib kiss
 -lib tct
 -lib bad-nlp
+-lib tink_json
 -cp src
 -dce full
 -D analyzer-optimize
@@ -13,6 +14,6 @@ Main
 --next
 
 -js bin/editor.js
-Editor
+--main Editor
 
 -cmd npx vsce package

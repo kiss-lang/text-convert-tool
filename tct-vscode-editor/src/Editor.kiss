@@ -1,0 +1,35 @@
+(var &mut :VSCodeAPI _vscode)
+(var &mut :Window window)
+(var &mut :Document document)
+(var &mut :Element content)
+(var &mut :Array<Block> tctBlocks)
+
+(function postMessage [:Message message]
+    (_vscode.postMessage (Json.stringify message)))
+
+(function _main []
+    (set window EditorExterns.window)
+    (set document window.document)
+    (set content (document.createElement "div"))
+    (document.body.appendChild content)
+
+    (localFunction createElement [:String tag :String html]
+        (let [e (document.createElement tag)]
+            (set e.innerHTML html)
+            e))
+
+    (content.appendChild (createElement "p" "Hello editor html generation!"))
+    (window.addEventListener "message"
+        ->:Void event
+            (let [:Message message (Json.parse event.data)]
+                (case message
+                    ((Initialize blocks)
+                        (set tctBlocks blocks)
+                        (doFor block blocks
+                            (content.appendChild (createElement "p" block.inText))))
+                    (otherwise null))))
+
+    (set _vscode (EditorExterns.acquireVsCodeApi))
+    (set Prelude.printStr ->[message]
+        (postMessage (Print message)))
+    (print "Hello editor/provider interface!"))

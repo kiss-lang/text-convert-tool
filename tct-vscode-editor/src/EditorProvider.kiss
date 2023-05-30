@@ -12,15 +12,26 @@
 (method :Promise<Void> resolveCustomTextEditor [:TextDocument document :WebviewPanel webviewPanel :CancellationToken _token]
     (set webviewPanel.webview.options (object enableScripts true))
     (set webviewPanel.webview.html (htmlForWebview webviewPanel.webview))
-    
-    (webviewPanel.webview.onDidReceiveMessage
-        ->:Void [e]
-            null)
 
-    (webviewPanel.onDidChangeViewState
-        ->e {
-            (unless e.webviewPanel.visible null)
-        })
+	(let [project (FileConversionProject.loadDirectory (document.fileName.directory))
+			postMessage ->[:Message message] (webviewPanel.webview.postMessage (Json.stringify message))]
+		(webviewPanel.webview.onDidReceiveMessage
+				->:Void [e]
+				 	(let [:Message message (Json.parse e)]
+						(case message
+							((Print m)
+								(print m))
+							(otherwise))))
+
+		(webviewPanel.onDidChangeViewState
+			->e
+				(unless e.webviewPanel.visible 
+					// Handle editor losing focus
+					null))
+
+		(postMessage
+			(Initialize project.blocks)))
+
     null)
 
 (method :String htmlForWebview [:Webview webview]
