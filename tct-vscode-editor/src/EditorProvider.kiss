@@ -30,6 +30,10 @@
 								(reportRequest (project.toggleLock blockIdx)))
 							((RequestInsert blockIdx)
 								(reportRequest (project.insertBlock blockIdx)))
+							((RequestJoinDown blockIdx)
+								(reportRequest (project.joinBlockDown blockIdx)))
+							(RequestFullUpdate
+								(postMessage (Initialize project.blocks)))
 							(otherwise
 								(errorMessage "Unhandled message from editor: $message")))))
 

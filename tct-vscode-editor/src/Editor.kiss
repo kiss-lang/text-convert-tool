@@ -28,10 +28,12 @@
 
     (localFunction initialize [:Array<Block> _blocks]
         (set tctBlocks _blocks)
+        (set content.innerHTML "")
         (localFunction rowForBlock [:Element table :Block block]
             (let [tr (createElement "tr" "")
                     [tdDelete tdInsertAbove tdIn tdConvert tdOut tdLocked tdJoin tdInsertBelow] (for i (range 8) (createElement "td" ""))
                     tdDeleteLink (createElement "a" "x")
+                    tdJoinLink (createElement "a" "join ↓")
                     tdLockedCheckBox (createElement "input" "")
                     codeIn (createElement "code" block.inText)
                     codeOut (createElement "code" block.outText)]
@@ -73,8 +75,16 @@
                 (makeInsertLink tdInsertAbove 0)
                 (makeInsertLink tdInsertBelow 1)
 
+                // Convert link
                 (set tdConvert.innerHTML "->")
-                (set tdJoin.innerHTML "join ↓")
+                
+                // JoinDown link
+                (tdJoin.appendChild tdJoinLink)
+                (tdJoinLink.addEventListener "click"
+                    ->(let [idx (tctBlocks.indexOf block)]
+                        (onSuccess
+                            (postMessage RequestFullUpdate))
+                        (postMessage (RequestJoinDown idx))))
                 
                 (tdIn.appendChild codeIn)
                 (tdOut.appendChild codeOut)
