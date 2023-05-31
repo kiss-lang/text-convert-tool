@@ -28,6 +28,45 @@
 
     (localFunction initialize [:Array<Block> _blocks]
         (set tctBlocks _blocks)
+        (localFunction rowForBlock [:Element table :Block block]
+            (let [tr (createElement "tr" "")
+                    [tdDelete tdInsertAbove tdIn tdConvert tdOut tdLocked tdJoin tdInsertBelow] (for i (range 8) (createElement "td" ""))
+                    tdDeleteLink (createElement "a" "x")
+                    tdLockedCheckBox (createElement "input" "")
+                    codeIn (createElement "code" block.inText)
+                    codeOut (createElement "code" block.outText)]
+                    
+                // Delete block:
+                (tdDelete.appendChild tdDeleteLink)
+                (tdDeleteLink.addEventListener "click"
+                    ->(let [idx (tctBlocks.indexOf block)]
+                        (onSuccess
+                            (tctBlocks.splice idx 1)
+                            (table.removeChild tr))
+                        (postMessage (RequestDelete idx))))
+
+                // Lock/unlock block:
+                (tdLocked.appendChild tdLockedCheckBox)
+                (tdLockedCheckBox.setAttribute "type" "checkbox")
+                (when block.locked
+                    (tdLockedCheckBox.setAttribute "checked" "true"))
+                (tdLockedCheckBox.addEventListener "change"
+                    ->(let [idx (tctBlocks.indexOf block)]
+                        (onSuccess
+                            (set block.locked !block.locked))
+                        (postMessage (RequestToggleLock idx))))
+
+                (set tdInsertAbove.innerHTML "+")
+                (set tdInsertBelow.innerHTML "+")
+                (set tdConvert.innerHTML "->")
+                (set tdJoin.innerHTML "join ↓")
+                
+                (tdIn.appendChild codeIn)
+                (tdOut.appendChild codeOut)
+                (doFor td [tdDelete tdInsertAbove tdIn tdConvert tdOut tdLocked tdJoin tdInsertBelow]
+                    (tr.appendChild td))
+                tr))
+
         (let [pre (createElement "pre" "")
                 table (createElement "table" "")
                 headingRow (createElement "tr" "")
@@ -35,43 +74,7 @@
             (doFor heading headings (headingRow.appendChild heading))
             (table.appendChild headingRow)
             (doFor block tctBlocks
-                (let [tr (createElement "tr" "")
-                        [tdDelete tdInsertAbove tdIn tdConvert tdOut tdLocked tdJoin tdInsertBelow] (for i (range 8) (createElement "td" ""))
-                        tdDeleteLink (createElement "a" "x")
-                        tdLockedCheckBox (createElement "input" "")
-                        codeIn (createElement "code" block.inText)
-                        codeOut (createElement "code" block.outText)]
-                    
-                    // Delete block:
-                    (tdDelete.appendChild tdDeleteLink)
-                    (tdDeleteLink.addEventListener "click"
-                        ->(let [idx (tctBlocks.indexOf block)]
-                            (onSuccess
-                                (tctBlocks.splice idx 1)
-                                (table.removeChild tr))
-                            (postMessage (RequestDelete idx))))
-
-                    // Lock/unlock block:
-                    (tdLocked.appendChild tdLockedCheckBox)
-                    (tdLockedCheckBox.setAttribute "type" "checkbox")
-                    (when block.locked
-                        (tdLockedCheckBox.setAttribute "checked" "true"))
-                    (tdLockedCheckBox.addEventListener "change"
-                        ->(let [idx (tctBlocks.indexOf block)]
-                            (onSuccess
-                                (set block.locked !block.locked))
-                            (postMessage (RequestToggleLock idx))))
-
-                    (set tdInsertAbove.innerHTML "+")
-                    (set tdInsertBelow.innerHTML "+")
-                    (set tdConvert.innerHTML "->")
-                    (set tdJoin.innerHTML "join ↓")
-                    
-                    (tdIn.appendChild codeIn)
-                    (tdOut.appendChild codeOut)
-                    (doFor td [tdDelete tdInsertAbove tdIn tdConvert tdOut tdLocked tdJoin tdInsertBelow]
-                        (tr.appendChild td))
-                    (table.appendChild tr)))
+                (table.appendChild (rowForBlock table block)))
             (pre.appendChild table)
             (content.appendChild pre)))
 
