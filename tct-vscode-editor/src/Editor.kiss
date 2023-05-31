@@ -56,8 +56,23 @@
                             (set block.locked !block.locked))
                         (postMessage (RequestToggleLock idx))))
 
-                (set tdInsertAbove.innerHTML "+")
-                (set tdInsertBelow.innerHTML "+")
+                // Insert block links:
+                (localFunction makeInsertLink [td idxOffset]
+                    (let [link (createElement "a" "+")]
+                        (td.appendChild link)
+                        (link.addEventListener "click"
+                            ->(let [idx (+ (tctBlocks.indexOf block) idxOffset)]
+                                (onSuccess
+                                    // NOTE This block object has a blank id because we shouldn't
+                                    // need to reference ids in the editor context:
+                                    (let [newBlock
+                                                (object id "" inText "" outText "" locked false)]
+                                        (tctBlocks.insert idx newBlock)
+                                        (table.insertBefore (rowForBlock table newBlock) (nth table.childNodes (+ idx 1)))))
+                                (postMessage (RequestInsert idx))))))
+                (makeInsertLink tdInsertAbove 0)
+                (makeInsertLink tdInsertBelow 1)
+
                 (set tdConvert.innerHTML "->")
                 (set tdJoin.innerHTML "join ↓")
                 
