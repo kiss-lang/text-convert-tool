@@ -68,6 +68,13 @@
     (FileSystem.deleteFile "${blockDir}/${block.id}.${inExtension}")
     (FileSystem.deleteFile "${blockDir}/${block.id}.${outExtension}"))
 
+(method :Void _saveOutputFiles []
+    (File.saveContent inFile
+        (.join (for block blocks block.inText) ""))
+
+    (File.saveContent outFile
+        (.join (for block blocks block.outText) "")))
+
 (method :FileConversionProject fullSave []
     (unless (and (FileSystem.exists directory) (FileSystem.isDirectory directory))
         (FileSystem.createDirectory directory))
@@ -80,11 +87,7 @@
     (doFor block blocks
         (_saveBlock block))
 
-    (File.saveContent inFile
-        (.join (for block blocks block.inText) ""))
-
-    (File.saveContent outFile
-        (.join (for block blocks block.outText) ""))
+    (_saveOutputFiles)
 
     this)
 
@@ -126,6 +129,7 @@
             (_saveBlock newBlock))
         (never otherwise))
     (changeHistory.push change)
+    (_saveOutputFiles)
     true)
 
 (method :ChangeRecord _invertChange [:ChangeRecord change]
