@@ -4,6 +4,7 @@
 @(:expose "activate")
 (function activate [:ExtensionContext context]
     (printThroughInfoMessage)
+    (awaitLetCatchThroughErrorMessage)
     
     (context.subscriptions.push
         (EditorProvider.register context))
