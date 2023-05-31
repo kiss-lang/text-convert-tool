@@ -18,20 +18,26 @@
             (set e.innerHTML html)
             e))
 
-    (localFunction initialize [:Array<Block> blocks]
-        (set tctBlocks blocks)
+    (localFunction initialize [:Array<Block> _blocks]
+        (set tctBlocks _blocks)
         (let [pre (createElement "pre" "")
                 table (createElement "table" "")
                 headingRow (createElement "tr" "")
                 headings (for heading ["" "" "input text" "" "output text" "locked" "" ""] (createElement "th" heading))]
             (doFor heading headings (headingRow.appendChild heading))
             (table.appendChild headingRow)
-            (doFor block blocks
+            (doFor block tctBlocks
                 (let [tr (createElement "tr" "")
                         [tdDelete tdInsertAbove tdIn tdConvert tdOut tdLocked tdJoin tdInsertBelow] (for i (range 8) (createElement "td" ""))
+                        tdDeleteLink (createElement "a" "x")
                         codeIn (createElement "code" block.inText)
                         codeOut (createElement "code" block.outText)]
-                    (set tdDelete.innerHTML "x")
+                    (tdDelete.appendChild tdDeleteLink)
+                    (tdDeleteLink.addEventListener "click"
+                        ->(let [idx (tctBlocks.indexOf block)]
+                                (tctBlocks.splice idx 1)
+                                (table.removeChild tr)
+                                (postMessage (RequestDelete idx))))
                     (set tdInsertAbove.innerHTML "+")
                     (set tdInsertBelow.innerHTML "+")
                     (set tdConvert.innerHTML "->")

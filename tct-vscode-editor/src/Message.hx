@@ -1,7 +1,7 @@
 import tct.FileConversionProject;
 
 enum Message {
-    RequestChange(record:ChangeRecord);
+    RequestDelete(blockIndex:Int);
     Initialize(blocks:Array<Block>);
     Print(message:String);
     Error(message:String);

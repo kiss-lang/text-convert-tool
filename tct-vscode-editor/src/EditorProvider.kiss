@@ -23,7 +23,10 @@
 								(print m))
 							((Error m)
 								(errorMessage m))
-							(otherwise))))
+							((RequestDelete blockIdx)
+								(assert (project.deleteBlock blockIdx)))
+							(otherwise
+								(errorMessage "Unhandled message from editor: $message")))))
 
 		(webviewPanel.onDidChangeViewState
 			->e
