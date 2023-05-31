@@ -23,14 +23,15 @@
         (let [pre (createElement "pre" "")
                 table (createElement "table" "")
                 headingRow (createElement "tr" "")
-                headings (for heading ["" "input text" "" "output text" "locked" "" ""] (createElement "th" heading))]
+                headings (for heading ["" "" "input text" "" "output text" "locked" "" ""] (createElement "th" heading))]
             (doFor heading headings (headingRow.appendChild heading))
             (table.appendChild headingRow)
             (doFor block blocks
                 (let [tr (createElement "tr" "")
-                        [tdInsertAbove tdIn tdConvert tdOut tdLocked tdJoin tdInsertBelow] (for i (range 7) (createElement "td" ""))
+                        [tdDelete tdInsertAbove tdIn tdConvert tdOut tdLocked tdJoin tdInsertBelow] (for i (range 8) (createElement "td" ""))
                         codeIn (createElement "code" block.inText)
                         codeOut (createElement "code" block.outText)]
+                    (set tdDelete.innerHTML "x")
                     (set tdInsertAbove.innerHTML "+")
                     (set tdInsertBelow.innerHTML "+")
                     (set tdConvert.innerHTML "->")
@@ -38,7 +39,7 @@
                     
                     (tdIn.appendChild codeIn)
                     (tdOut.appendChild codeOut)
-                    (doFor td [tdInsertAbove tdIn tdConvert tdOut tdLocked tdJoin tdInsertBelow]
+                    (doFor td [tdDelete tdInsertAbove tdIn tdConvert tdOut tdLocked tdJoin tdInsertBelow]
                         (tr.appendChild td))
                     (table.appendChild tr)))
             (pre.appendChild table)
