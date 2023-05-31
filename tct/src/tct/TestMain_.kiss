@@ -27,6 +27,20 @@
         (assertEquals "here\n\n" .inText (first project.blocks))
         (assertEquals "there" .inText (second project.blocks))
         
+        // Test block joining
+        (assert !(project.joinBlockDown 1))
+
+        (assert (project.joinBlockDown 0))
+        (assertEquals "here\n\nthere" .inText (first project.blocks))
+        (assertEquals 1 .length project.blocks)
+
+        (project.undoChange)
+        (project.undoChange)
+        (project.undoChange)
+
+        (assertEquals "here\n\n" .inText (first project.blocks))
+        (assertEquals "there" .inText (second project.blocks))
+        
         // Test block insertion
         (project.insertBlock 0 "not " "!")
         (project.insertBlock 2 "not " "!")

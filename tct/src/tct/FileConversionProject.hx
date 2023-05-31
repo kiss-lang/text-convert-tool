@@ -21,6 +21,7 @@ enum ChangeType {
     Insert;
     Delete;
     Edit;
+    JoinDown;
 }
 
 typedef ChangeRecord = {

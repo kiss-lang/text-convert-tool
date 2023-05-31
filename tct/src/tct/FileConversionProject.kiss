@@ -127,6 +127,16 @@
             (setNth blocks blockIndex newBlock)
             (_saveTctFile)
             (_saveBlock newBlock))
+        ((objectWith [type JoinDown] blockIndex oldBlock newBlock)
+            (when (or (isNull newBlock) oldBlock.locked newBlock.locked)
+                (return false))
+            // Instead of recording a hard-to-invert JoinDown ChangeRecord,
+            // allow subcommands to record their simple step-by-step history,
+            // then return early
+            (return (and
+                        (insertBlock blockIndex "${oldBlock.inText}${newBlock.inText}" "${oldBlock.outText}${newBlock.outText}" false)
+                        (deleteBlock (+ blockIndex 2))
+                        (deleteBlock (+ blockIndex 1)))))
         (never otherwise))
     (changeHistory.push change)
     (_saveOutputFiles)
@@ -172,6 +182,13 @@
                                     inText newInText
                                     outText newOutText
                                     locked newLocked)))))
+
+(method joinBlockDown [index]
+    (_applyChange (object
+                    type JoinDown
+                    blockIndex index
+                    oldBlock (nth blocks index)
+                    newBlock (nth blocks (+ index 1)))))
 
 (method isLocked [index]
     .locked (nth blocks index))
