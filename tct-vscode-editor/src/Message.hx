@@ -7,6 +7,8 @@ enum Message {
     RequestInsert(blockIndex:Int);
     RequestToggleLock(blockIndex:Int);
     RequestJoinDown(blockIndex:Int);
+    RequestUndo;
+    RequestRedo;
     RequestFullUpdate;
     Initialize(blocks:Array<Block>);
     Print(message:String);

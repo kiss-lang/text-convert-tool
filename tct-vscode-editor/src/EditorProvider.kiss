@@ -32,6 +32,10 @@
 								(reportRequest (project.insertBlock blockIdx)))
 							((RequestJoinDown blockIdx)
 								(reportRequest (project.joinBlockDown blockIdx)))
+							(RequestUndo
+								(reportRequest (project.undoChange)))
+							(RequestRedo
+								(reportRequest (project.redoChange)))
 							(RequestFullUpdate
 								(postMessage (Initialize project.blocks)))
 							(otherwise

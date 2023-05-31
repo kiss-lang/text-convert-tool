@@ -116,6 +116,23 @@
                         (set doOnSuccess null))
                     (otherwise null))))
 
+    // Keyboard shortcuts:
+    (window.addEventListener "keydown" ->:Void e
+        (if e.ctrlKey
+                (case e.key
+                    // Undo/redo shortcuts:
+                    ("z"
+                        (onSuccess
+                            (postMessage RequestFullUpdate))
+                        (postMessage RequestUndo))
+                    ("y" 
+                        (onSuccess
+                            (postMessage RequestFullUpdate))
+                        (postMessage RequestRedo))
+                    (otherwise))
+            (case e.key
+                (otherwise))))
+
     (set Prelude.makeAwaitLetDefaultCatch
         ->binding
             ->reason
