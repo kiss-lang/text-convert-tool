@@ -53,6 +53,11 @@
                         (initialize blocks))
                     (otherwise null))))
 
+    (set Prelude.makeAwaitLetDefaultCatch
+        ->binding
+            ->reason
+                (postMessage (Error "awaitLet $binding failed: $reason")))
+
     (set _vscode (EditorExterns.acquireVsCodeApi))
     (set Prelude.printStr ->[message]
         (postMessage (Print message)))

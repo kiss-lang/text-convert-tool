@@ -21,6 +21,8 @@
 						(case message
 							((Print m)
 								(print m))
+							((Error m)
+								(errorMessage m))
 							(otherwise))))
 
 		(webviewPanel.onDidChangeViewState
