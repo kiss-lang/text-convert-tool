@@ -26,6 +26,8 @@
 								(errorMessage m))
 							((RequestDelete blockIdx)
 								(reportRequest (project.deleteBlock blockIdx)))
+							((RequestToggleLock blockIdx)
+								(reportRequest (project.toggleLock blockIdx)))
 							(otherwise
 								(errorMessage "Unhandled message from editor: $message")))))
 
