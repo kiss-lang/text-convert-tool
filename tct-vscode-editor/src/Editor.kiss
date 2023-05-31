@@ -3,6 +3,14 @@
 (var &mut :Document document)
 (var &mut :Element content)
 (var &mut :Array<Block> tctBlocks)
+(var &mut :Void->Void doOnSuccess null)
+(defMacro onSuccess [&body body]
+    `{
+        (when doOnSuccess
+            (postMessage (Error "still waiting for success of previous edit request!"))
+            (return))
+        (set doOnSuccess ->:Void {,@body})
+    })
 
 (function postMessage [:Message message]
     (_vscode.postMessage (Json.stringify message)))
@@ -35,9 +43,11 @@
                     (tdDelete.appendChild tdDeleteLink)
                     (tdDeleteLink.addEventListener "click"
                         ->(let [idx (tctBlocks.indexOf block)]
+                            (onSuccess
                                 (tctBlocks.splice idx 1)
-                                (table.removeChild tr)
-                                (postMessage (RequestDelete idx))))
+                                (table.removeChild tr))
+                            (postMessage (RequestDelete idx))))
+
                     (set tdInsertAbove.innerHTML "+")
                     (set tdInsertBelow.innerHTML "+")
                     (set tdConvert.innerHTML "->")
@@ -57,6 +67,11 @@
                 (case message
                     ((Initialize blocks)
                         (initialize blocks))
+                    (RequestSuccess
+                        (doOnSuccess)
+                        (set doOnSuccess null))
+                    (RequestFailure
+                        (set doOnSuccess null))
                     (otherwise null))))
 
     (set Prelude.makeAwaitLetDefaultCatch

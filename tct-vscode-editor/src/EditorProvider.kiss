@@ -14,7 +14,8 @@
     (set webviewPanel.webview.html (htmlForWebview webviewPanel.webview))
 
 	(let [project (FileConversionProject.loadDirectory (document.fileName.directory))
-			postMessage ->[:Message message] (webviewPanel.webview.postMessage (Json.stringify message))]
+			postMessage ->[:Message message] (webviewPanel.webview.postMessage (Json.stringify message))
+			reportRequest ->[:Bool result] (postMessage (if result RequestSuccess RequestFailure))]
 		(webviewPanel.webview.onDidReceiveMessage
 				->:Void [e]
 				 	(let [:Message message (Json.parse e)]
@@ -24,7 +25,7 @@
 							((Error m)
 								(errorMessage m))
 							((RequestDelete blockIdx)
-								(assert (project.deleteBlock blockIdx)))
+								(reportRequest (project.deleteBlock blockIdx)))
 							(otherwise
 								(errorMessage "Unhandled message from editor: $message")))))
 
