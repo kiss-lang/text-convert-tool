@@ -38,7 +38,22 @@
 				"title": "tct-vscode-editor: Import a file to a new TCT file",
 				"command": "tct-vscode-editor.importTCTInputFile"
 			}
-		]
+		],
+		"configuration": {
+			"title": "tct-vscode-editor",
+			"properties": {
+				"tct-vscode-editor.nameExceptions": {
+					"description": "Treat these tokens as names",
+					"items": {
+						"type": "string"
+					},
+					"type": [
+						"array"
+					],
+					"default": []
+				}
+			}
+		}
 	},
 	"engines": {
 		"vscode": "^1.4.0"

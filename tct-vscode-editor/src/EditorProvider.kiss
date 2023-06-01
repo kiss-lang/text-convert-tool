@@ -13,6 +13,8 @@
     (set webviewPanel.webview.options (object enableScripts true))
     (set webviewPanel.webview.html (htmlForWebview webviewPanel.webview))
 
+	(loadFrom "tct" "src/tct/conversions/FountainToHollywoo.kiss")
+
 	(let [project (FileConversionProject.loadDirectory (document.fileName.directory))
 			postMessage ->[:Message message] (webviewPanel.webview.postMessage (Json.stringify message))
 			reportRequest ->[:Bool result] (postMessage (if result RequestSuccess RequestFailure))]
