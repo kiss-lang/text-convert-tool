@@ -196,3 +196,27 @@
 (method toggleLock [index]
     (let [locked .locked (nth blocks index)]
         (editBlock index null null !locked)))
+
+(var :Array<Conversion> _conversions [])
+
+(function registerConversion [:Conversion c]
+    (_conversions.push c))
+
+(method :Map<String,String> validConversions [index :String->Dynamic reportError]
+    (let [sourceFile inFile
+            outputFile outFile
+            block (nth blocks index)
+            source block.inText
+            validMap (new Map)]
+        (doFor c _conversions
+            (case c
+                ((when (and
+                            (= sourceType (sourceFile.extension))
+                            (= outputType (outputFile.extension))
+                            (canConvert source))
+                        (objectWith sourceType outputType canConvert convert name))
+                    (dictSet validMap name
+                            (try (convert source)
+                                (catch [e] (reportError "Conversion error: $e") "Conversion error: $e"))))
+                (never otherwise)))
+        validMap))
