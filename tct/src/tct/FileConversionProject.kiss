@@ -218,5 +218,5 @@
                     (dictSet validMap name
                             (try (convert source)
                                 (catch [e] (reportError "Conversion error: $e") "Conversion error: $e"))))
-                (never otherwise)))
+                (otherwise)))
         validMap))
