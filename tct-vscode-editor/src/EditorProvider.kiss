@@ -24,6 +24,8 @@
 								(print m))
 							((Error m)
 								(errorMessage m))
+							((RequestEdit blockIdx outText value)
+								(reportRequest (project.editBlock blockIdx (if outText null value) (if outText value null))))
 							((RequestDelete blockIdx)
 								(reportRequest (project.deleteBlock blockIdx)))
 							((RequestToggleLock blockIdx)

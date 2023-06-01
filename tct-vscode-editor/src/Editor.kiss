@@ -26,6 +26,43 @@
             (set e.innerHTML html)
             e))
 
+    (localFunction monacoEditor [td :Block block :Bool outText &opt style language]
+        (unless (or block.locked (= "DIV" .tagName (td.children.item 0)))
+            (let [div (createElement "div" "")
+                    :Dynamic e
+                        (Lib.global.monaco.editor.create div
+                            (objectWith
+                                [
+                                    value (if outText block.outText block.inText)
+                                    lineNumbers "on"
+                                    scrollBeyondLastLine false
+                                    theme "vs-dark"
+                                    minimap (object enabled false)
+                                    wordWrap true
+                                ]
+                                language))
+                    updateSize
+                        ->[&opt _] {
+                            (div.setAttribute "style" "$?{style} height: $(e.getContentHeight)px;")
+                            (e.layout)
+                        }]
+                (updateSize)
+                (set td.innerHTML "")
+                (td.appendChild div)
+                (e.onDidBlurEditorText
+                    ->_ {
+                        (onSuccess
+                            (if outText
+                                    (set block.outText (e.getValue))
+                                (set block.inText (e.getValue)))
+                            (set td.innerHTML "")
+                            (td.appendChild (createElement "code" (e.getValue))))
+                        (postMessage (RequestEdit (tctBlocks.indexOf block) outText (e.getValue)))
+                    })
+                (e.onDidContentSizeChange updateSize)
+                (e.focus)
+                e)))
+
     (localFunction initialize [:Array<Block> _blocks]
         (set tctBlocks _blocks)
         (set content.innerHTML "")
@@ -86,8 +123,15 @@
                             (postMessage RequestFullUpdate))
                         (postMessage (RequestJoinDown idx))))
                 
+                // In/out blocks open Monaco editor when clicked:
+                (tdIn.addEventListener "click"
+                    ->(monacoEditor tdIn block false))
                 (tdIn.appendChild codeIn)
+
+                (tdOut.addEventListener "click"
+                    ->(monacoEditor tdOut block true))
                 (tdOut.appendChild codeOut)
+
                 (doFor td [tdDelete tdInsertAbove tdIn tdConvert tdOut tdLocked tdJoin tdInsertBelow]
                     (tr.appendChild td))
                 tr))
@@ -102,6 +146,8 @@
                 (table.appendChild (rowForBlock table block)))
             (pre.appendChild table)
             (content.appendChild pre)))
+
+    
 
     (window.addEventListener "message"
         ->:Void event

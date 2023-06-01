@@ -3,6 +3,7 @@ import kiss.List;
 
 import vscode.*;
 
+import js.Lib;
 import js.html.Window;
 import js.html.Document;
 import js.html.Element;
