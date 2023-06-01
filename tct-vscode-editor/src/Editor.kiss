@@ -3,14 +3,27 @@
 (var &mut :Document document)
 (var &mut :Element content)
 (var &mut :Array<Block> tctBlocks)
-(var &mut :Void->Void doOnSuccess null)
+(var &mut :String->Void doOnSuccess null)
 (defMacro onSuccess [&body body]
     `{
         (when doOnSuccess
             (postMessage (Error "still waiting for success of previous edit request!"))
             (return))
-        (set doOnSuccess ->:Void {,@body})
+        (set doOnSuccess ->:Void _ {,@body})
     })
+(defMacro onConvert [argList &body body]
+    `{
+        (when doOnSuccess
+            (postMessage (Error "still waiting for success of previous edit request!"))
+            (return))
+        (set doOnSuccess (lambda ,argList ,@body))
+    })
+
+(function htmlEscape [:String code]
+    (.replace
+        (code.replace "<" "&lt;")
+        ">"
+        "&gt;"))
 
 (function postMessage [:Message message]
     (_vscode.postMessage (Json.stringify message)))
@@ -45,9 +58,10 @@
                         ->[&opt _] {
                             (div.setAttribute "style" "$?{style} height: $(e.getContentHeight)px;")
                             (e.layout)
-                        }]
+                        }
+                    :Element codeElement
+                        (cast (td.removeChild td.firstChild))]
                 (updateSize)
-                (set td.innerHTML "")
                 (td.appendChild div)
                 (e.onDidBlurEditorText
                     ->_ {
@@ -56,7 +70,8 @@
                                     (set block.outText (e.getValue))
                                 (set block.inText (e.getValue)))
                             (set td.innerHTML "")
-                            (td.appendChild (createElement "code" (e.getValue))))
+                            (set codeElement.innerHTML (htmlEscape (e.getValue)))
+                            (td.appendChild codeElement))
                         (postMessage (RequestEdit (tctBlocks.indexOf block) outText (e.getValue)))
                     })
                 (e.onDidContentSizeChange updateSize)
@@ -72,8 +87,9 @@
                     tdDeleteLink (createElement "a" "x")
                     tdJoinLink (createElement "a" "join ↓")
                     tdLockedCheckBox (createElement "input" "")
-                    codeIn (createElement "code" block.inText)
-                    codeOut (createElement "code" block.outText)]
+                    tdConvertLink (createElement "a" "->")
+                    codeIn (createElement "code" (htmlEscape block.inText))
+                    codeOut (createElement "code" (htmlEscape block.outText))]
                     
                 // Delete block:
                 (tdDelete.appendChild tdDeleteLink)
@@ -113,7 +129,13 @@
                 (makeInsertLink tdInsertBelow 1)
 
                 // Convert link
-                (set tdConvert.innerHTML "->")
+                (tdConvert.appendChild tdConvertLink)
+                (tdConvertLink.addEventListener "click"
+                    ->(unless block.locked
+                        (let [idx (tctBlocks.indexOf block)]
+                            (onConvert [text]
+                                (set codeOut.innerHTML text))
+                            (postMessage (RequestConvert idx)))))
                 
                 // JoinDown link
                 (tdJoin.appendChild tdJoinLink)
@@ -156,9 +178,13 @@
                     ((Initialize blocks)
                         (initialize blocks))
                     (RequestSuccess
-                        (doOnSuccess)
+                        (doOnSuccess "")
                         (set doOnSuccess null))
                     (RequestFailure
+                        (set doOnSuccess null))
+                    ((BlockConverted idx text)
+                        (set .outText (nth tctBlocks idx) text)
+                        (doOnSuccess text)
                         (set doOnSuccess null))
                     (otherwise null))))
 

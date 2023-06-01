@@ -17,7 +17,29 @@
 
 	(let [project (FileConversionProject.loadDirectory (document.fileName.directory))
 			postMessage ->[:Message message] (webviewPanel.webview.postMessage (Json.stringify message))
-			reportRequest ->[:Bool result] (postMessage (if result RequestSuccess RequestFailure))]
+			reportRequest ->:Void [:Bool result] (postMessage (if result RequestSuccess RequestFailure))]
+		
+		(localFunction :Void chooseConversion [blockIdx]
+			(let [validConversions (project.validConversions blockIdx ->m (errorMessage m))]
+				(cond
+					((= 1 (count validConversions))
+						(let [text (first (collect (validConversions.iterator)))]
+							(when (project.editBlock blockIdx null text)
+								(postMessage (BlockConverted blockIdx text)))))
+					((< 1 (count validConversions))
+						// choose between conversions
+						(awaitLet [text (_quickPick (for =>key value validConversions (quickPickItem key (Std.string value))))]
+							(catch [:Dynamic e]
+								(reportRequest false) null)
+							(ifLet [_ text
+									text (dictGet validConversions text.label)] 
+									(when (project.editBlock blockIdx null text)
+										(postMessage (BlockConverted blockIdx text)))
+								(reportRequest false))
+							null))
+					(true
+						(reportRequest false)))))
+
 		(webviewPanel.webview.onDidReceiveMessage
 				->:Void [e]
 				 	(let [:Message message (Json.parse e)]
@@ -28,6 +50,16 @@
 								(errorMessage m))
 							((RequestEdit blockIdx outText value)
 								(reportRequest (project.editBlock blockIdx (if outText null value) (if outText value null))))
+							((RequestConvert blockIdx)
+								(cond
+									(.outText (nth project.blocks blockIdx)
+										// Check if overwrite?
+										(awaitLet [overwrite (quickPick ["Overwrite" "Cancel"])]
+											(if (= "Overwrite" overwrite)
+											 		(chooseConversion blockIdx)
+												(reportRequest false))))
+									(true
+										(chooseConversion blockIdx))))
 							((RequestDelete blockIdx)
 								(reportRequest (project.deleteBlock blockIdx)))
 							((RequestToggleLock blockIdx)
