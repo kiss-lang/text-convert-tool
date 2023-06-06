@@ -149,10 +149,16 @@
                 (tdIn.addEventListener "click"
                     ->(monacoEditor tdIn block false))
                 (tdIn.appendChild codeIn)
+                (var CONTENT_COLUMN_STYLE "width: 80ch;")
+                (var CONTENT_CODE_STYLE  "display: inline-block; overflow-wrap: break-word; white-space: normal;")
+                (tdIn.setAttribute "style" CONTENT_COLUMN_STYLE)
+                (codeIn.setAttribute "style" CONTENT_CODE_STYLE)
 
                 (tdOut.addEventListener "click"
                     ->(monacoEditor tdOut block true))
                 (tdOut.appendChild codeOut)
+                (tdOut.setAttribute "style" CONTENT_COLUMN_STYLE)
+                (codeOut.setAttribute "style" CONTENT_CODE_STYLE)
 
                 (doFor td [tdDelete tdInsertAbove tdIn tdConvert tdOut tdLocked tdJoin tdInsertBelow]
                     (tr.appendChild td))
