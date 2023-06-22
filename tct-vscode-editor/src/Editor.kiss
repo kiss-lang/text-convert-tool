@@ -137,7 +137,7 @@
                     ->(unless block.locked
                         (let [idx (tctBlocks.indexOf block)]
                             (onConvert [text]
-                                (set codeOut.innerHTML text))
+                                (set codeOut.innerHTML (htmlEscape text)))
                             (postMessage (RequestConvert idx)))))
                 
                 // JoinDown link
