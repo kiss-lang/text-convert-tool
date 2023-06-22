@@ -21,9 +21,12 @@
 
 (function htmlEscape [:String code]
     (.replace
-        (code.replace "<" "&lt;")
-        ">"
-        "&gt;"))
+        (.replace
+            (code.replace "<" "&lt;")
+            ">"
+            "&gt;")
+        "\n"
+        "<br />"))
 
 (function postMessage [:Message message]
     (_vscode.postMessage (Json.stringify message)))
