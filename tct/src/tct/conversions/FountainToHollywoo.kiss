@@ -91,6 +91,7 @@
                         "\n"))))
 
 (doWithCharacters "Add" "<position key> <facing>")
+(doWithCharacters "Move" "<position key> <facing>")
 (doWithCharacters "Remove" "")
 
 (FileConversionProject.registerConversion
