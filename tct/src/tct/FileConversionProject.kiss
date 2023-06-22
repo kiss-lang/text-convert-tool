@@ -224,7 +224,7 @@
 (method :Void fullAutoConvert [:String->Dynamic reportError]
     (doFor [idx block] (enumerate blocks)
         (print "Converting block $(+ idx 1)/${blocks.length}")
-        (when block.locked (continue))
+        (when (or block.locked block.outText) (continue))
         (let [vc (validConversions idx reportError)]
             (when (= 1 (count vc))
                 (doFor =>conversionName text vc
