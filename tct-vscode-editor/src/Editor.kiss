@@ -2,6 +2,7 @@
 (var &mut :Window window)
 (var &mut :Document document)
 (var &mut :Element content)
+(var &mut :Element table)
 (var &mut :Array<Block> tctBlocks)
 (var &mut :String->Void doOnSuccess null)
 (defMacro onSuccess [&body body]
@@ -167,8 +168,8 @@
                     (tr.appendChild td))
                 tr))
 
+        (set table (createElement "table" ""))
         (let [pre (createElement "pre" "")
-                table (createElement "table" "")
                 headingRow (createElement "tr" "")
                 headings (for heading ["" "" "input text" "" "output text" "locked" "" ""] (createElement "th" heading))]
             (doFor heading headings (headingRow.appendChild heading))
@@ -177,8 +178,6 @@
                 (table.appendChild (rowForBlock table block)))
             (pre.appendChild table)
             (content.appendChild pre)))
-
-    
 
     (window.addEventListener "message"
         ->:Void event
@@ -195,11 +194,14 @@
                         (set .outText (nth tctBlocks idx) text)
                         (doOnSuccess text)
                         (set doOnSuccess null))
+                    ((FoundText blockIdx)
+                        (.scrollIntoView (table.children.item (+ blockIdx 1))))
                     (otherwise null))))
 
     // Keyboard shortcuts:
     (window.addEventListener "keydown" ->:Void e
         (if e.ctrlKey
+                // Ctrl+key
                 (case e.key
                     // Undo/redo shortcuts:
                     ("z"
@@ -210,7 +212,15 @@
                         (onSuccess
                             (postMessage RequestFullUpdate))
                         (postMessage RequestRedo))
+                    // Find text:
+                    ("f"
+                        (onSuccess null)
+                        (postMessage RequestFindText))
+                    (";"
+                        (onSuccess null)
+                        (postMessage RequestFindNext))
                     (otherwise))
+            // key without ctrl
             (case e.key
                 (otherwise))))
 

@@ -12,6 +12,9 @@ enum Message {
     RequestUndo;
     RequestRedo;
     RequestFullUpdate;
+    RequestFindText;
+    RequestFindNext;
+    FoundText(blockIndex:Int);
     Initialize(blocks:Array<Block>);
     BlockConverted(blockIndex:Int, outText:String);
     Print(message:String);

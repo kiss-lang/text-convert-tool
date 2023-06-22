@@ -10,6 +10,8 @@
 (var &mut :String currentFilename null)
 (var :Map<String,FileConversionProject> conversionProjects (new Map))
 (var :Map<String,Void->Void> fullUpdateFunctions (new Map))
+(var &mut :String searchText null)
+(var &mut :Null<Int> lastBlockIndex null)
 
 (defNew [&prop :ExtensionContext context])
 
@@ -23,7 +25,15 @@
 	(let [project (FileConversionProject.loadDirectory (document.fileName.directory))
 			postMessage ->[:Message message] (webviewPanel.webview.postMessage (Json.stringify message))
 			requestFullUpdate ->:Void (postMessage (Initialize project.blocks))
-			reportRequest ->:Void [:Bool result] (postMessage (if result RequestSuccess RequestFailure))]
+			reportRequest ->:Void [:Bool result] (postMessage (if result RequestSuccess RequestFailure))
+			findNext ->:Void {
+								(ifLet [idx (project.findText searchText (+ lastBlockIndex 1))]
+										{(set lastBlockIndex idx)
+											(postMessage (FoundText idx))}
+									(warningMessage "No more occurrences of '${searchText}'"))
+								(reportRequest true)
+							}]
+
 
 		(dictSet conversionProjects document.fileName project)
 		(dictSet fullUpdateFunctions document.fileName requestFullUpdate)
@@ -83,6 +93,13 @@
 								(reportRequest (project.redoChange)))
 							(RequestFullUpdate
 								(requestFullUpdate))
+							(RequestFindText
+								(awaitLet [text (inputBox)]
+									(set searchText text)
+									(set lastBlockIndex -1)
+									(findNext)))
+							(RequestFindNext
+								(findNext))
 							(otherwise
 								(errorMessage "Unhandled message from editor: $message")))))
 
