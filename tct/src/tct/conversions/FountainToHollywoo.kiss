@@ -77,7 +77,7 @@
             (stream.dropString "SUPER:")
             (stream.dropWhitespace)
             (let [text (stream.expect "super text" ->(stream.takeLine))]
-                "TIMEDSUPERTEXT ##\"${text}\"## ##\"${text}\"##")
+                "TIMEDSUPERTEXT ##\"${text}\"## ##\"Delay for supertext '${text}'\"##")
         }))
 
 (FileConversionProject.registerConversion
