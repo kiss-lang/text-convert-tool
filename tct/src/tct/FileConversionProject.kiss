@@ -229,3 +229,14 @@
             (when (= 1 (count vc))
                 (doFor =>conversionName text vc
                     (editBlock idx null text null))))))
+
+(method :Null<Int> findText [:String text &opt :Int startingIdx :Bool caseSensitive]
+    (let [blocksToCheck (enumerate blocks)
+            blocksToCheck (if startingIdx (blocksToCheck.slice startingIdx) blocksToCheck)
+            text (if caseSensitive text (text.toLowerCase))]
+        (doFor [idx block] blocksToCheck
+            (let [:String inText (if caseSensitive block.inText (block.inText.toLowerCase))
+                    :String outText (if caseSensitive block.outText (block.outText.toLowerCase))]
+                (when (or (inText.contains text) (outText.contains text))
+                    (return idx))))
+        null))

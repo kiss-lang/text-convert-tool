@@ -9,6 +9,7 @@ import uuid.Uuid;
 import sys.io.File;
 import sys.FileSystem;
 using haxe.io.Path;
+using StringTools;
 
 typedef Block = {
     id:String,

@@ -27,6 +27,9 @@
         (assertEquals "here\n\n" .inText (first project.blocks))
         (assertEquals "there" .inText (second project.blocks))
         
+        (assertEquals 0 (project.findText "here"))
+        (assertEquals 1 (project.findText "here" 1))
+        
         // Test block joining
         (assert !(project.joinBlockDown 1))
 
