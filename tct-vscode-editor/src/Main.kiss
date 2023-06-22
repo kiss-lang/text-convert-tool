@@ -26,6 +26,13 @@
                             (let [project (FileConversionProject.importFile file outputType splitBy outBlockTerminator)]
                                 (executeCommand "workbench.action.quickOpen" "${dir}/${project.tctFile}"))))))))
 
+    (defCommand context fullAutoConvert "Convert as many blocks as possible automatically" "C-; C-a" []
+        (let [filename EditorProvider.currentFilename
+                project (dictGet EditorProvider.conversionProjects filename)
+                requestFullUpdate (dictGet EditorProvider.fullUpdateFunctions filename)]
+            (project.fullAutoConvert ->message (errorMessage message))
+            (requestFullUpdate)))
+
     // Add your extension's configuration here with (defConfiguration <...>):
     (defConfiguration 
         :Array<String> nameExceptions

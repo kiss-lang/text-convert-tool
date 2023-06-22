@@ -7,9 +7,14 @@
     (let [provider (new EditorProvider context)]
         (Vscode.window.registerCustomEditorProvider "tct.splitView" provider)))
 
+(var &mut :String currentFilename null)
+(var :Map<String,FileConversionProject> conversionProjects (new Map))
+(var :Map<String,Void->Void> fullUpdateFunctions (new Map))
+
 (defNew [&prop :ExtensionContext context])
 
 (method :Promise<Void> resolveCustomTextEditor [:TextDocument document :WebviewPanel webviewPanel :CancellationToken _token]
+    (set currentFilename document.fileName)
     (set webviewPanel.webview.options (object enableScripts true))
     (set webviewPanel.webview.html (htmlForWebview webviewPanel.webview))
 
@@ -17,7 +22,11 @@
 
 	(let [project (FileConversionProject.loadDirectory (document.fileName.directory))
 			postMessage ->[:Message message] (webviewPanel.webview.postMessage (Json.stringify message))
+			requestFullUpdate ->:Void (postMessage (Initialize project.blocks))
 			reportRequest ->:Void [:Bool result] (postMessage (if result RequestSuccess RequestFailure))]
+
+		(dictSet conversionProjects document.fileName project)
+		(dictSet fullUpdateFunctions document.fileName requestFullUpdate)
 		
 		(localFunction :Void chooseConversion [blockIdx]
 			(let [validConversions (project.validConversions blockIdx ->m (errorMessage m))]
@@ -73,7 +82,7 @@
 							(RequestRedo
 								(reportRequest (project.redoChange)))
 							(RequestFullUpdate
-								(postMessage (Initialize project.blocks)))
+								(requestFullUpdate))
 							(otherwise
 								(errorMessage "Unhandled message from editor: $message")))))
 

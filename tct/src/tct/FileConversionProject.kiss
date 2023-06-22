@@ -220,3 +220,12 @@
                                 (catch [e] (reportError "Conversion error: $e") "Conversion error: $e"))))
                 (otherwise)))
         validMap))
+
+(method :Void fullAutoConvert [:String->Dynamic reportError]
+    (doFor [idx block] (enumerate blocks)
+        (print "Converting block $(+ idx 1)/${blocks.length}")
+        (when block.locked (continue))
+        (let [vc (validConversions idx reportError)]
+            (when (= 1 (count vc))
+                (doFor =>conversionName text vc
+                    (editBlock idx null text null))))))

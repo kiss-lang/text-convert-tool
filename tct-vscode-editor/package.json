@@ -19,6 +19,11 @@
 				"command": "tct-vscode-editor.importTCTInputFile",
 				"mac": "Cmd+; Cmd+i",
 				"key": "Ctrl+; Ctrl+i"
+			},
+			{
+				"command": "tct-vscode-editor.fullAutoConvert",
+				"mac": "Cmd+; Cmd+a",
+				"key": "Ctrl+; Ctrl+a"
 			}
 		],
 		"customEditors": [
@@ -37,6 +42,10 @@
 			{
 				"title": "tct-vscode-editor: Import a file to a new TCT file",
 				"command": "tct-vscode-editor.importTCTInputFile"
+			},
+			{
+				"title": "tct-vscode-editor: Convert as many blocks as possible automatically",
+				"command": "tct-vscode-editor.fullAutoConvert"
 			}
 		],
 		"configuration": {
