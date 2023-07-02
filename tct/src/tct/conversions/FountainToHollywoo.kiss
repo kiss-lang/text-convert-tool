@@ -115,10 +115,10 @@
             (stream.dropString "SUPER:")
             (stream.dropWhitespace)
             (let [text (stream.expect "super text" ->(stream.takeLine))]
-                "TIMEDSUPERTEXT ##\"${text}\"## ##\"Delay for supertext '${text}'\"##")
+                "TIMEDSUPERTEXT ##\"${text}\"## ##\"Delay for supertext '${text}'\"##\n")
         }))
 
 (FileConversionProject.registerConversion
     (new tct.StreamConversion "Delay" "fountain" "hollywoo"
         ->stream (isScreenLine stream.content)
-        ->stream "DELAY ##\"$(stream.content.trim)\"##"))
+        ->stream "DELAY ##\"$(stream.content.trim)\"##\n"))
