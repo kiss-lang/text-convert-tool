@@ -13,3 +13,5 @@
     (linearMotionTo $actorVar <position key> <speed> cc <soundLoop key> <volumeMod> <connectedSprites>))"))
                         "\n")
                     "\n")))
+
+(newSceneConversion "flixel" "newFlxSet" #"(assetPath "images" <filename>)"# "(new FlxCamera)")

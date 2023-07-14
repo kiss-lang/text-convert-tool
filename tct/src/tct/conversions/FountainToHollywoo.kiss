@@ -108,3 +108,29 @@
     (new tct.StreamConversion "Delay" "fountain" "hollywoo"
         ->stream (isScreenLine stream.content)
         ->stream "DELAY ##\"$(stream.content.trim)\"##\n"))
+
+(function newSceneConversion [engine command setArgs newCamera]
+    (FileConversionProject.registerConversion
+        (new tct.StreamConversion "New scene (hollywoo-${engine})" "fountain" "hollywoo"
+            ->stream (stream.startsWithOneOf ["INT." "EXT." "INT./EXT."])
+            ->stream {
+                (let [fullHeading (stream.content.trim)
+                        perspectiveAbbr (stream.expect "perspective" ->(stream.takeUntilAndDrop " "))
+                        perspective (case perspectiveAbbr ("INT." "Interior") ("EXT." "Exterior") ("INT./EXT." "Mixed") (never otherwise))
+                        location (.trim (stream.expect "location" ->(stream.takeUntilLastAndDrop "-")))
+                        setKey "${perspectiveAbbr} ${location}"
+                        time {(stream.dropWhitespace) stream.content}
+                        timeEnumValue (case (time.trim) ("MORNING" "Morning") ("DAY" "Day") ("EVENING" "Evening") ("NIGHT" "Night") (otherwise "<Morning/Day/Evening/Night>"))]
+"(preload
+    (${command} \"${setKey}\" ${setArgs})
+    (newSceneFromSet \"${fullHeading}\" \"${setKey}\" ${timeEnumValue} ${perspective} ${newCamera}))
+SETSCENE \"${fullHeading}\""
+                )
+            })))
+(FileConversionProject.registerConversion
+    (new tct.StreamConversion "Return to scene" "fountain" "hollywoo"
+        ->stream (stream.startsWithOneOf ["INT." "EXT." "INT./EXT."])
+        ->stream {
+            (let [fullHeading (stream.content.trim)]
+                "SETSCENE \"${fullHeading}\"")
+        }))
