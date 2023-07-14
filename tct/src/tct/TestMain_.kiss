@@ -47,16 +47,16 @@
         // Test block insertion
         (project.insertBlock 0 "not " "!")
         (project.insertBlock 2 "not " "!")
-        (assertExportContents project "not here\n\nnot there" "!!")
+        (assertExportContents project "not here\n\nnot there" "!\n!\n")
         
         // Test block deletion
         (project.deleteBlock 0)
-        (assertExportContents project "here\n\nnot there" "!")
+        (assertExportContents project "here\n\nnot there" "!\n")
         (assertEquals 6 .length (FileSystem.readDirectory "${project.directory}/blocks"))
         
         // Test block editing
         (project.editBlock 2 "here" "!!!" true)
-        (assertExportContents project "here\n\nnot here" "!!!!")
+        (assertExportContents project "here\n\nnot here" "!\n!!!\n")
 
         // Test trying to delete locked block
         (assert !(project.deleteBlock 2))
@@ -64,22 +64,22 @@
         (assert !(project.editBlock 2 "edit" "locked block"))
         (project.toggleLock 2)
         (assert (project.deleteBlock 2))
-        (assertExportContents project "here\n\nnot " "!")
+        (assertExportContents project "here\n\nnot " "!\n")
         
         // Test undo/redo delete
         (project.undoChange)
-        (assertExportContents project "here\n\nnot here" "!!!!")
+        (assertExportContents project "here\n\nnot here" "!\n!!!\n")
         (project.redoChange)
-        (assertExportContents project "here\n\nnot " "!")
+        (assertExportContents project "here\n\nnot " "!\n")
 
         (project.undoChange)
         (project.undoChange)
         
         // Test undo/redo edit:
         (assert (project.undoChange))
-        (assertExportContents project "here\n\nnot there" "!")
+        (assertExportContents project "here\n\nnot there" "!\n")
         (project.redoChange)
-        (assertExportContents project "here\n\nnot here" "!!!!")
+        (assertExportContents project "here\n\nnot here" "!\n!!!\n")
         )
 
     (rmrf "test.tct")

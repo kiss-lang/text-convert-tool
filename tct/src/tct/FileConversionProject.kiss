@@ -62,8 +62,9 @@
 
 (method :Void _saveBlock [:Block block]
     (File.saveContent "${blockDir}/${block.id}.${inExtension}" block.inText)
-    (unless (block.outText.endsWith outBlockTerminator)
-        (+= block.outText outBlockTerminator))
+    (when block.outText
+        (unless (block.outText.endsWith outBlockTerminator)
+            (+= block.outText outBlockTerminator)))
     (File.saveContent "${blockDir}/${block.id}.${outExtension}" block.outText))
 
 (method :Void _deleteBlock [:Block block]
