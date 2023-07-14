@@ -12,7 +12,7 @@
 	"dependencies": {
 		"monaco-editor": "^0.38.0"
 	},
-	"publisher": "",
+	"publisher": "nqnstudios",
 	"contributes": {
 		"keybindings": [
 			{
