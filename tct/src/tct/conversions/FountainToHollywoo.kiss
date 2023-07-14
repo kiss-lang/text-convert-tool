@@ -1,4 +1,4 @@
-// TCT Conversions for Fountain files
+// TCT Conversions for Fountain files -> Hollywoo scripts
 
 (function isUpperCase [s]
     (= s (s.toUpperCase)))
@@ -93,20 +93,6 @@
 (doWithCharacters "Add" "<position key> <facing>")
 (doWithCharacters "Move" "<position key> <facing>")
 (doWithCharacters "Remove" "")
-
-// hollywoo-flixel linearMotion
-// (method linearMotionTo [:FlxSprite sprite :String positionKey :Float speed &opt :Void->Void cc :String soundLoop :Float volumeMod :Array<FlxSprite> connectedSprites]
-(FileConversionProject.registerConversion
-    (new tct.NamesConversion "linearMotionTo tween" "fountain" "hollywoo"
-        ->[block names] (isScreenLine block)
-        ->names (+
-                    (.join
-                        (for name names
-                            (let [actorVar (name.toLowerCase)]
-"(withActorCC \"${name}\" $actorVar
-    (linearMotionTo $actorVar <position key> <speed> cc <soundLoop key> <volumeMod> <connectedSprites>))"))
-                        "\n")
-                    "\n")))
 
 (FileConversionProject.registerConversion
     (new tct.StreamConversion "Timed super text" "fountain" "hollywoo"

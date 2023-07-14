@@ -21,6 +21,7 @@
     (set webviewPanel.webview.html (htmlForWebview webviewPanel.webview))
 
 	(loadFrom "tct" "src/tct/conversions/FountainToHollywoo.kiss")
+	(loadFrom "tct" "src/tct/conversions/FountainToHollywooFlixel.kiss")
 
 	(let [project (FileConversionProject.loadDirectory (document.fileName.directory))
 			postMessage ->[:Message message] (webviewPanel.webview.postMessage (Json.stringify message))
