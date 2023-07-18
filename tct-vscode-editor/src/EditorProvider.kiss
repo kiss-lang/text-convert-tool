@@ -35,6 +35,10 @@
 								(reportRequest true)
 							}]
 
+		(webviewPanel.onDidChangeViewState
+			->e {
+				(when e.webviewPanel.visible (requestFullUpdate))
+			})
 
 		(dictSet conversionProjects document.fileName project)
 		(dictSet fullUpdateFunctions document.fileName requestFullUpdate)
