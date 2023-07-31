@@ -5,6 +5,9 @@
 (var &mut :Element table)
 (var &mut :Array<Block> tctBlocks)
 (var &mut :String->Void doOnSuccess null)
+
+(var &mut :Dynamic currentEditor null)
+
 (defMacro onSuccess [&body body]
     `{
         (when doOnSuccess
@@ -83,6 +86,7 @@
                 (td.appendChild div)
                 (e.onDidBlurEditorText
                     ->_ {
+                        (set currentEditor null)
                         (onSuccess
                             (if outText
                                     (set block.outText (e.getValue))
@@ -94,6 +98,7 @@
                     })
                 (e.onDidContentSizeChange updateSize)
                 (e.focus)
+                (set currentEditor e)
                 e)))
 
     (localFunction initialize [:Array<Block> _blocks]
@@ -248,6 +253,10 @@
                     (otherwise))
             // key without ctrl
             (case e.key
+                ("Escape"
+                    // Escape => Close monaco editor and save its block
+                    (when (currentEditor?.hasTextFocus)
+                        (document.activeElement.blur)))
                 (otherwise))))
 
     (set Prelude.makeAwaitLetDefaultCatch
