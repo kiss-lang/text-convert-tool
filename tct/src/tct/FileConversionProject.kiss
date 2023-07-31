@@ -3,6 +3,7 @@
         &prop :String directory
         &prop :String inExtension
         &prop :String outExtension
+        &prop :String inBlockTerminator
         &prop :String outBlockTerminator
         &prop :Array<Block> blocks
     ]
@@ -16,8 +17,8 @@
 (function :FileConversionProject loadDirectory [directory]
     (let [tctFile "${directory}/tct.txt"
             stream (Stream.fromFile tctFile)
-            [inExtension outExtension outBlockTerminator]
-                (for thing ["inExtension" "outExtension" "outBlockTerminator"]
+            [inExtension outExtension inBlockTerminator outBlockTerminator]
+                (for thing ["inExtension" "outExtension" "inBlockTerminator" "outBlockTerminator"]
                     (stream.expect thing ->(stream.takeUntilAndDrop "|||")))
             blockLines
                 {
@@ -25,7 +26,7 @@
                     (filter (stream.content.split "\n"))
                 }]
         
-        (new FileConversionProject directory inExtension outExtension outBlockTerminator
+        (new FileConversionProject directory inExtension outExtension inBlockTerminator outBlockTerminator
             (for blockLine blockLines
                 (let [[id lockedStr] (blockLine.split " ")]
                     (object
@@ -43,6 +44,7 @@
                 "$(inFile.withoutExtension).tct"
                 inExtension
                 outExtension
+                inBlockDelimiter
                 outBlockTerminator
                 (for [idx section] (enumerate inBlockContent)
                     (when (= idx (- inBlockContent.length 1))
@@ -55,12 +57,15 @@
 
 (method :Void _saveTctFile []
     (let [&mut tctContent ""]
-        (+= tctContent "${inExtension}|||${outExtension}|||${outBlockTerminator}|||\n")
+        (+= tctContent "${inExtension}|||${outExtension}|||${inBlockTerminator}|||${outBlockTerminator}|||\n")
         (doFor block blocks
             (+= tctContent "${block.id} ${block.locked}\n")
             (File.saveContent tctFile tctContent))))
 
 (method :Void _saveBlock [:Block block]
+    (when block.inText
+        (unless (block.inText.endsWith inBlockTerminator)
+            (+= block.inText inBlockTerminator)))
     (File.saveContent "${blockDir}/${block.id}.${inExtension}" block.inText)
     (when block.outText
         (unless (block.outText.endsWith outBlockTerminator)
