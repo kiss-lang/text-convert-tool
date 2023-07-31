@@ -29,6 +29,20 @@
         "\n"
         "<br />"))
 
+(function :EditorState getState []
+    (ifLet [s (the EditorState (_vscode.getState))]
+            s
+        (object
+            scrollY 0.0)))
+
+(function :Void setState [:EditorState state]
+    (_vscode.setState state))
+
+(defMacro changeState [s &body b]
+    `(let [,s (getState)]
+        ,@b
+        (setState ,s)))
+
 (function postMessage [:Message message]
     (_vscode.postMessage (Json.stringify message)))
 
@@ -177,7 +191,19 @@
             (doFor block tctBlocks
                 (table.appendChild (rowForBlock table block)))
             (pre.appendChild table)
-            (content.appendChild pre)))
+            (content.appendChild pre))
+            
+        (window.scroll
+            (object
+                left 0
+                top .scrollY (getState)
+                behavior INSTANT))
+        (window.addEventListener "wheel" ->e (e.stopPropagation) true)    
+        (window.addEventListener "scroll"
+            ->(changeState s
+                (set s.scrollY window.scrollY)))
+
+)
 
     (window.addEventListener "message"
         ->:Void event
@@ -230,5 +256,6 @@
                 (postMessage (Error "awaitLet $binding failed: $reason")))
 
     (set _vscode (EditorExterns.acquireVsCodeApi))
+
     (set Prelude.printStr ->[message]
         (postMessage (Print message))))

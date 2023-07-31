@@ -16,6 +16,10 @@ import Message;
 
 using StringTools;
 
+typedef EditorState = {
+    scrollY:Float,
+};
+
 @:build(kiss.Kiss.build())
 class Editor {
     static function main() {
