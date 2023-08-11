@@ -9,6 +9,14 @@
     (context.subscriptions.push
         (EditorProvider.register context))
 
+    // Don't let me accidentally edit a file that's generated from a tct project:
+    (Vscode.workspace.onDidOpenTextDocument
+        ->document (let [filename document.fileName
+                            dir (filename.directory)
+                            filesInDir (sys.FileSystem.readDirectory dir)]
+                        (when (filesInDir.contains "tct.txt")
+                            (executeCommand "workbench.action.files.setActiveEditorReadonlyInSession"))))
+
     // Add your extension's commands here with (defCommand <...>):
     // (defCommand context exampleCommand "An example command for your extension" "C-; C-1" [] (doSomething))
     (defCommand context importTCTInputFile "Import a file to a new TCT file" "C-; C-i" []
