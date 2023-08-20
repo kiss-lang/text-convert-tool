@@ -11,7 +11,7 @@ import js.html.Element;
 import tink.Json;
 
 import tct.FileConversionProject;
-import EditorExterns;
+import kiss_vscode_api.WebviewExterns;
 import Message;
 
 using StringTools;
