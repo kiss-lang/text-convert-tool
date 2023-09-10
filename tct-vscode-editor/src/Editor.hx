@@ -18,6 +18,7 @@ using StringTools;
 
 typedef EditorState = {
     scrollY:Float,
+    page:Int
 };
 
 @:build(kiss.Kiss.build())

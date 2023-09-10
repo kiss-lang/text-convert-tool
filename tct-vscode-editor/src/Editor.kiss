@@ -36,6 +36,7 @@
     (ifLet [s (the EditorState (_vscode.getState))]
             s
         (object
+            page 0
             scrollY 0.0)))
 
 (function :Void setState [:EditorState state]
@@ -100,10 +101,42 @@
                 (e.focus)
                 (set currentEditor e)
                 e)))
+    (localVar BLOCKS_PER_PAGE 20)
+    (localVar &mut :Array<Element> blockRows [])
+    (localFunction hideByPage []
+        (let [page .page (getState)
+                minIdx (* BLOCKS_PER_PAGE page)
+                maxIdx (+ minIdx BLOCKS_PER_PAGE -1)]
+            (doFor [idx tr] (enumerate blockRows)
+                (set tr.style
+                    (if (<= minIdx idx maxIdx)
+                            ""
+                        "display: none")))))
+    (localVar pages (document.createElement "p"))
+    (localVar bottomPages (document.createElement "p"))
+    (localFunction setPage [:Int page]
+        (changeState s (set s.page page))
+        (set pages.innerHTML "")
+        (set bottomPages.innerHTML "")
+        (let [maxPage (Math.ceil (/ tctBlocks.length BLOCKS_PER_PAGE))]
+            (doFor p [pages bottomPages]
+                (doFor i (range maxPage)
+                    (let [link (document.createElement "a")]
+                        (set link.innerHTML "$(+ 1 i) |")
+                        (when (= i page)
+                            (set link.innerHTML "*${link.innerHTML}"))
+                        (link.addEventListener "click"
+                            ->:Void
+                                (setPage i))
+                        (p.appendChild link)))))
+        (hideByPage))
 
     (localFunction initialize [:Array<Block> _blocks]
         (set tctBlocks _blocks)
         (set content.innerHTML "")
+        (set blockRows [])
+        
+
         (localFunction rowForBlock [:Element table :Block block]
             (let [tr (createElement "tr" "")
                     [tdDelete tdInsertAbove tdIn tdConvert tdOut tdLocked tdJoin tdInsertBelow] (for i (range 8) (createElement "td" ""))
@@ -185,7 +218,10 @@
 
                 (doFor td [tdDelete tdInsertAbove tdIn tdConvert tdOut tdLocked tdJoin tdInsertBelow]
                     (tr.appendChild td))
+                (blockRows.push tr)
                 tr))
+
+
 
         (set table (createElement "table" ""))
         (let [pre (createElement "pre" "")
@@ -196,8 +232,11 @@
             (doFor block tctBlocks
                 (table.appendChild (rowForBlock table block)))
             (pre.appendChild table)
-            (content.appendChild pre))
+            (content.appendChild pages)
+            (content.appendChild pre)
+            (content.appendChild bottomPages))
             
+        (setPage .page (getState))
         (window.scroll
             (object
                 left 0
@@ -226,6 +265,8 @@
                         (doOnSuccess text)
                         (set doOnSuccess null))
                     ((FoundText blockIdx)
+                        (let [pageOfBlock (Math.floor (/ blockIdx BLOCKS_PER_PAGE))]
+                            (setPage pageOfBlock))
                         (.scrollIntoView (table.children.item (+ blockIdx 1))))
                     (otherwise null))))
 
