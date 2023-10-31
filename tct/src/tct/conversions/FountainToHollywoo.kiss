@@ -105,6 +105,16 @@
         }))
 
 (FileConversionProject.registerConversion
+    (new tct.StreamConversion "Timed title card" "fountain" "hollywoo"
+        ->stream (stream.startsWith "SUPER:")
+        ->stream {
+            (stream.dropString "SUPER:")
+            (stream.dropWhitespace)
+            (let [text (stream.expect "super text" ->(stream.takeLine))]
+                "TIMEDTITLECARD ##\"Delay for titlecard '${text}'\"## [##\"${text}\"##]\n")
+        }))
+
+(FileConversionProject.registerConversion
     (new tct.StreamConversion "Delay" "fountain" "hollywoo"
         ->stream (isScreenLine stream.content)
         ->stream "DELAY ##\"$(stream.content.trim)\"##\n"))
