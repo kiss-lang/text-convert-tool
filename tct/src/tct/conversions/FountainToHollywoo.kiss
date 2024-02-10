@@ -49,10 +49,11 @@
         ->stream ?(whenLet [(Some name) (stream.takeLine)]
                         (doFor tag specialSpeechTags
                             (whenLet [(Some _) (indexOf name "(${tag}")] (return false)))
-                        (let [hasParen (name.contains "(")
+                        (let [name (.trim (name.replace "(CONT'D)" ""))
+                                hasParen (name.contains "(")
                                 name (.trim (name.substr 0 (name.indexOf "(")))]
                             (and (isUpperCase name) {(stream.dropWhitespace) !(stream.isEmpty)} hasParen)))
-                        
+
         ->stream
             (let [nameAndParenTag (whenLet [(Some name) (stream.takeLine)] (.trim (name.replace "(CONT'D)" "")))
                     nameAndParenTagStream (kiss.Stream.fromString nameAndParenTag)
@@ -72,7 +73,7 @@
         ->stream ?{(stream.dropWhitespace) (stream.startsWith "/*")}
         ->stream
             "LABEL $(.trim
-                (.replace 
+                (.replace
                     (.replace
                         (.replace stream.content "/*" "")
                         "*/" "")
