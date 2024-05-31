@@ -2,7 +2,7 @@
             &prop &mut :String sourceType
             &prop &mut :String outputType
             :(String,Array<String>)->Bool canConvertNames
-            :Array<String>->String convertNames]
+            :(String,Array<String>)->String convertBlock]
     [
         &mut :String->Bool canConvert ->block {
             (Main.updateNameExceptions)
@@ -10,6 +10,6 @@
         }
         &mut :String->String convert ->block {
             (Main.updateNameExceptions)
-            (let [names (Names.findNames block)] (convertNames names))
+            (let [names (Names.findNames block)] (convertBlock block names))
         }
     ])
