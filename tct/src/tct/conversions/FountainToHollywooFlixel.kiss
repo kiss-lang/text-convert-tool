@@ -9,9 +9,9 @@
                     (.join
                         (for name names
                             (let [actorVar (name.toLowerCase)]
-"(withActorCC \"${name}\" $actorVar
+"**(withActorCC \"${name}\" $actorVar
     (linearMotionTo $actorVar <position key> <speed> cc <soundLoop key> <volumeMod> <connectedSprites>))"))
                         "\n")
                     "\n")))
 
-(newSceneConversion "flixel" "newFlxSet" #"(assetPath "images" <filename>)"# "(new FlxCamera)")
+(newSceneConversion "flixel" "newFlxSet" #"(assetPath "images" <filename>)"# "(new FlxCamera)" true)

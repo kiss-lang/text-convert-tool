@@ -64,7 +64,7 @@
                     (let [wryly (ifLet [(Some w) (stream.takeBetween "(" ")\n")] w "")
                             line (ifLet [(Some l) (stream.takeLine)] (l.trim) (break))]
                         (when line
-                            (output.push "CUSTOMSPEECH \"${parenTag}\" \"${name}\" \"${wryly}\" <args...> ##\"${line}\"##"))))
+                            (output.push "// CUSTOMSPEECH \"${parenTag}\" \"${name}\" \"${wryly}\" <args...> ##\"${line}\"##"))))
                 (output.push "")
                 (output.join "\n"))))
 
@@ -83,16 +83,16 @@
     (when (block.startsWith "SUPER:") (return false))
     (= 1 .length (filter (block.split "\n"))))
 
-(function doWithCharacters [:String thing :String args]
+(function doWithCharacters [:String thing :String args &opt :Bool containsPlaceholders]
     (FileConversionProject.registerConversion
         (new tct.NamesConversion "${thing} characters" "fountain" "hollywoo"
             ->[block names] (isScreenLine block)
-            ->names (+
+            ->names (+ (if containsPlaceholders "// " "")
                         (.join (for name names "$(thing.toUpperCase)CHARACTER \"${name}\" $args") "\n")
                         "\n"))))
 
-(doWithCharacters "Add" "<position key> <facing>")
-(doWithCharacters "Move" "<position key> <facing>")
+(doWithCharacters "Add" "<position key> <facing>" true)
+(doWithCharacters "Move" "<position key> <facing>" true)
 (doWithCharacters "Remove" "")
 
 (FileConversionProject.registerConversion
@@ -120,7 +120,7 @@
         ->stream (isScreenLine stream.content)
         ->stream "DELAY ##\"$(stream.content.trim)\"##\n"))
 
-(function newSceneConversion [engine command setArgs newCamera]
+(function newSceneConversion [engine command setArgs newCamera containsPlaceholders]
     (FileConversionProject.registerConversion
         (new tct.StreamConversion "New scene (hollywoo-${engine})" "fountain" "hollywoo"
             ->stream (stream.startsWithOneOf ["INT." "EXT." "INT./EXT."])
@@ -131,8 +131,9 @@
                         location (.trim (stream.expect "location" ->(stream.takeUntilLastAndDrop "-")))
                         setKey "${perspectiveAbbr} ${location}"
                         time {(stream.dropWhitespace) stream.content}
-                        timeEnumValue (case (time.trim) ("MORNING" "Morning") ("DAY" "Day") ("EVENING" "Evening") ("NIGHT" "Night") (otherwise "<Morning/Day/Evening/Night>"))]
-"(preload
+                        timeEnumValue (case (time.trim) ("MORNING" "Morning") ("DAY" "Day") ("EVENING" "Evening") ("NIGHT" "Night") (otherwise (set containsPlaceholders true) "<Morning/Day/Evening/Night>"))
+                        start (if containsPlaceholders "**" "")]
+"${start}(preload
     (${command} \"${setKey}\" ${setArgs})
     (newSceneFromSet \"${fullHeading}\" \"${setKey}\" ${timeEnumValue} ${perspective} ${newCamera}))
 SETSCENE \"${fullHeading}\""
