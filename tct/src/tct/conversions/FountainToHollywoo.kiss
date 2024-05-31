@@ -11,6 +11,7 @@
         (new tct.StreamConversion name "fountain" "hollywoo"
             ->stream
                 ?(whenLet [(Some name) (stream.takeUntilAndDrop " (${parenTag}")]
+                    (doFor tag scriptTags (when (name.startsWith tag) (return false)))
                     (and (isUpperCase name) {(stream.dropWhitespace) !(stream.isEmpty)}))
             ->stream
                 (let [name (whenLet [(Some name) (stream.takeUntilAndDrop " (${parenTag}")] name)
@@ -27,9 +28,12 @@
 (specialSpeech "VoiceOver Speech" "V.O." "VOICEOVER")
 (specialSpeech "Off-Screen Speech" "O.S." "OFFSCREENSPEECH")
 
+(var scriptTags ["INSERT"])
+
 (FileConversionProject.registerConversion
     (new tct.StreamConversion "Normal Speech" "fountain" "hollywoo"
         ->stream ?(whenLet [(Some name) (stream.takeLine)]
+                        (doFor tag scriptTags (when (name.startsWith tag) (return false)))
                         (doFor tag specialSpeechTags
                             (whenLet [(Some _) (indexOf name "(${tag}")] (return false)))
                         (and (isUpperCase name) {(stream.dropWhitespace) !(stream.isEmpty)}))
@@ -47,6 +51,7 @@
 (FileConversionProject.registerConversion
     (new tct.StreamConversion "Custom Speech" "fountain" "hollywoo"
         ->stream ?(whenLet [(Some name) (stream.takeLine)]
+                        (doFor tag scriptTags (when (name.startsWith tag) (return false)))
                         (doFor tag specialSpeechTags
                             (whenLet [(Some _) (indexOf name "(${tag}")] (return false)))
                         (let [name (.trim (name.replace "(CONT'D)" ""))
