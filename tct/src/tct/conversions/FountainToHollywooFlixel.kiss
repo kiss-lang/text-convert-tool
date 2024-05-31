@@ -15,3 +15,4 @@
                     "\n")))
 
 (newSceneConversion "flixel" "newFlxSet" #"(assetPath "images" <filename>)"# "(new FlxCamera)" true)
+(newPropConversion "flixel" "newFlxProp" #"(assetPath "images" <filename>)"# true)

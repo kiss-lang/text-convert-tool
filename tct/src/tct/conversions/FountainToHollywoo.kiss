@@ -144,6 +144,7 @@
 SETSCENE \"${fullHeading}\""
                 )
             })))
+
 (FileConversionProject.registerConversion
     (new tct.StreamConversion "Return to scene" "fountain" "hollywoo"
         ->stream (stream.startsWithOneOf ["INT." "EXT." "INT./EXT."])
@@ -151,3 +152,21 @@ SETSCENE \"${fullHeading}\""
             (let [fullHeading (stream.content.trim)]
                 "SETSCENE \"${fullHeading}\"")
         }))
+
+(function newPropConversion [engine command propArgs containsPlaceholders]
+    (FileConversionProject.registerConversion
+        (new tct.StreamConversion "New prop (hollywoo-${engine})" "fountain" "hollywoo"
+            ->stream (stream.startsWith "INSERT")
+            ->stream {
+                (stream.dropString "INSERT")
+                (stream.dropUntil "-")
+                (stream.dropString "-")
+                (stream.dropWhitespace)
+                (assertLet [(Some propKey) (stream.takeLine)
+                                propKey (propKey.trim)
+                                start (if containsPlaceholders "**" "")]
+"${start}(preload
+    (${command} \"${propKey}\" ${propArgs}))
+ADDPROP \"${propKey}\" \"position for ${propKey}\""
+                )
+            })))
