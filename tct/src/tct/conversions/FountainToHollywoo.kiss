@@ -22,7 +22,7 @@
                                 line (ifLet [(Some l) (stream.takeLine)] (l.trim) (break))]
                             (when line
                                 (+= output "$hmethod \"${name}\" \"${wryly}\" ##\"${line}\"##\n")
-                                (+= output "// DELAY ##\"Delay after ${line}\"##\n")
+                                (+= output "// WATCHMODEDELAY ##\"Delay after ${line}\"##\n")
                                 )))
                     output))))
 
@@ -47,7 +47,7 @@
                             line (ifLet [(Some l) (stream.takeLine)] (l.trim) (break))]
                         (when line
                             (output.push "NORMALSPEECH \"${name}\" \"${wryly}\" ##\"${line}\"##")
-                            (output.push "// DELAY ##\"Delay after ${line}\"##"))))
+                            (output.push "// WATCHMODEDELAY ##\"Delay after ${line}\"##"))))
                 (output.push "")
                 (output.join "\n"))))
 
@@ -73,7 +73,7 @@
                             line (ifLet [(Some l) (stream.takeLine)] (l.trim) (break))]
                         (when line
                             (output.push "// CUSTOMSPEECH \"${parenTag}\" \"${name}\" \"${wryly}\" <args...> ##\"${line}\"##")
-                            (output.push "// DELAY ##\"Delay after ${line}\"##"))))
+                            (output.push "// WATCHMODEDELAY ##\"Delay after ${line}\"##"))))
                 (output.push "")
                 (output.join "\n"))))
 
