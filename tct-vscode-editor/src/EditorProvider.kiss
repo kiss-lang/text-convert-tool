@@ -39,9 +39,11 @@
 								(reportRequest true)
 							}]
 
+		(prop &mut :Bool lastVisible false)
 		(webviewPanel.onDidChangeViewState
 			->e {
-				(when e.webviewPanel.visible (requestFullUpdate))
+				(when (and e.webviewPanel.visible !lastVisible) (requestFullUpdate))
+				(set lastVisible e.webviewPanel.visible)
 			})
 
 		(Vscode.window.onDidChangeWindowState
