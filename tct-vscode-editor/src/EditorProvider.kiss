@@ -46,9 +46,11 @@
 				(set lastVisible e.webviewPanel.visible)
 			})
 
+		(prop &mut :Bool lastFocused false)
 		(Vscode.window.onDidChangeWindowState
 			->e {
-				(when e.focused (requestFullUpdate))
+				(when (and e.focused !lastFocused) (requestFullUpdate))
+				(set lastFocused e.focused)
 			})
 
 		(dictSet conversionProjects document.fileName project)
