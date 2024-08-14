@@ -16,6 +16,9 @@ enum Message {
     RequestFindNext;
     FoundText(blockIndex:Int);
     Initialize(blocks:Array<Block>);
+    ConfirmManualEdit(blockIndex:Int);
+    YesManualEdit;
+    NoManualEdit;
     BlockConverted(blockIndex:Int, outText:String);
     Print(message:String);
     Error(message:String);

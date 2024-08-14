@@ -116,6 +116,17 @@
 									(findNext)))
 							(RequestFindNext
 								(findNext))
+							((ConfirmManualEdit blockIdx)
+								(let [validConversions (project.validConversions blockIdx ->m (errorMessage m))]
+									(cond
+										((= 0 (count validConversions))
+											(postMessage YesManualEdit))
+										(true
+											(awaitLet [response (infoMessage "Automatic conversions are available. Really edit manually?" "Yes" "No")]
+												(case response
+												 	("Yes" (postMessage YesManualEdit))
+													("No" (postMessage NoManualEdit))
+													(never otherwise)))))))
 							(otherwise
 								(errorMessage "Unhandled message from editor: $message")))))
 

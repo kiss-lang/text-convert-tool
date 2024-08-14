@@ -50,6 +50,11 @@
 (function postMessage [:Message message]
     (_vscode.postMessage (Json.stringify message)))
 
+(var &mut :Void->Void openManualEditor)
+(function confirmManualEdit [:Int blockIndex :Void->Void openBlockEditor]
+    (set openManualEditor openBlockEditor)
+    (postMessage (ConfirmManualEdit blockIndex)))
+
 (function _main []
     (set window WebviewExterns.window)
     (set document window.document)
@@ -210,8 +215,13 @@
                 (tdIn.setAttribute "style" CONTENT_COLUMN_STYLE)
                 (codeIn.setAttribute "style" CONTENT_CODE_STYLE)
 
-                (tdOut.addEventListener "click"
-                    ->(monacoEditor tdOut block true))
+                (let [idx (tctBlocks.indexOf block)]
+                    (tdOut.addEventListener "click"
+                        // If the block is empty, check if it can be converted automatically!
+                        ->(if block.outText
+                                (monacoEditor tdOut block true)
+                            (confirmManualEdit idx
+                                ->(monacoEditor tdOut block true)))))
                 (tdOut.appendChild codeOut)
                 (tdOut.setAttribute "style" CONTENT_COLUMN_STYLE)
                 (codeOut.setAttribute "style" CONTENT_CODE_STYLE)
@@ -264,6 +274,8 @@
                         (set .outText (nth tctBlocks idx) text)
                         (doOnSuccess text)
                         (set doOnSuccess null))
+                    (YesManualEdit (openManualEditor))
+                    (NoManualEdit (set openManualEditor null))
                     ((FoundText blockIdx)
                         (let [pageOfBlock (Math.floor (/ blockIdx BLOCKS_PER_PAGE))]
                             (setPage pageOfBlock))
