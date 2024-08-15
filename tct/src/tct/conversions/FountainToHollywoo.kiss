@@ -121,7 +121,7 @@
             (stream.dropString "SUPER:")
             (stream.dropWhitespace)
             (let [text (stream.expect "super text" ->(stream.takeLine))]
-                "TIMEDTITLECARD ##\"Delay for titlecard '${text}'\"## [##\"${text}\"##]\n")
+                "TIMEDTITLECARDV2 ##\"Delay for titlecard '${text}'\"## [##\"${text}\"##]\n")
         }))
 
 (FileConversionProject.registerConversion
