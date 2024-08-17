@@ -284,8 +284,9 @@
 
     // Keyboard shortcuts:
     (window.addEventListener "keydown" ->:Void e
-        (if e.ctrlKey
-                // Ctrl+key
+        (cond
+            // Ctrl+key
+            (e.ctrlKey
                 (case e.key
                     // Undo/redo shortcuts:
                     ("z"
@@ -300,17 +301,25 @@
                     ("f"
                         (onSuccess null)
                         (postMessage RequestFindText))
-                    (";"
+                    (otherwise)))
+            // Shift+key
+            (e.shiftKey
+                (case e.key
+                    ("N"
+                        (onSuccess null)
+                        (postMessage RequestFindPrevious))
+                    (otherwise)))
+            // key without modifier
+            (true
+                (case e.key
+                    ("Escape"
+                        // Escape => Close monaco editor and save its block
+                        (when (currentEditor?.hasTextFocus)
+                            (document.activeElement.blur)))
+                    ("n"
                         (onSuccess null)
                         (postMessage RequestFindNext))
-                    (otherwise))
-            // key without ctrl
-            (case e.key
-                ("Escape"
-                    // Escape => Close monaco editor and save its block
-                    (when (currentEditor?.hasTextFocus)
-                        (document.activeElement.blur)))
-                (otherwise))))
+                    (otherwise)))))
 
     (set Prelude.makeAwaitLetDefaultCatch
         ->binding

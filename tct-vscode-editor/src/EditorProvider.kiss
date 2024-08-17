@@ -30,15 +30,31 @@
 				(set project (loadProject))
 				(postMessage (Initialize project.blocks))
 			}
-			reportRequest ->:Void [:Bool result] (postMessage (if result RequestSuccess RequestFailure))
-			findNext ->:Void {
-								(ifLet [idx (project.findText searchText (+ lastBlockIndex 1))]
-										{(set lastBlockIndex idx)
-											(postMessage (FoundText idx))}
-									(warningMessage "No more occurrences of '${searchText}'"))
-								(reportRequest true)
-							}]
-
+			reportRequest ->:Void [:Bool result] (postMessage (if result RequestSuccess RequestFailure))]
+		(localFunction :Void findNext []
+			(ifLet [idx (project.findText searchText (+ lastBlockIndex 1))]
+					{(set lastBlockIndex idx)
+						(postMessage (FoundText idx))}
+				{
+					(warningMessage "No more occurrences of '${searchText}'")
+					// Loop around:
+					(unless (= -1 lastBlockIndex)
+						(set lastBlockIndex -1)
+						(findNext))
+				})
+			(reportRequest true))
+		(localFunction :Void findPrevious []
+			(ifLet [idx (project.findLastText searchText (- lastBlockIndex 1))]
+					{(set lastBlockIndex idx)
+						(postMessage (FoundText idx))}
+				{
+					(warningMessage "No more occurrences of '${searchText}'")
+					// Loop around:
+					(unless (= -1 lastBlockIndex)
+						(set lastBlockIndex -1)
+						(findNext))
+				})
+			(reportRequest true))
 		(prop &mut :Bool lastVisible false)
 		(webviewPanel.onDidChangeViewState
 			->e {
@@ -118,6 +134,8 @@
 									(findNext)))
 							(RequestFindNext
 								(findNext))
+							(RequestFindPrevious
+								(findPrevious))
 							((ConfirmManualEdit blockIdx)
 								(let [validConversions (project.validConversions blockIdx ->m (errorMessage m))]
 									(cond

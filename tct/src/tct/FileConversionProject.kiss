@@ -248,3 +248,16 @@
                 (when (or (inText.contains text) (outText.contains text))
                     (return idx))))
         null))
+
+(method :Null<Int> findLastText [:String text &opt :Int startingIdx :Bool caseSensitive]
+    (let [startingIdx (or startingIdx 0)
+            startingIdx (- text.length 1 startingIdx)
+            blocksToCheck (reverse (enumerate blocks))
+            blocksToCheck (if startingIdx (blocksToCheck.slice startingIdx) blocksToCheck)
+            text (if caseSensitive text (text.toLowerCase))]
+        (doFor [idx block] blocksToCheck
+            (let [:String inText (if caseSensitive block.inText (block.inText.toLowerCase))
+                    :String outText (if caseSensitive block.outText (block.outText.toLowerCase))]
+                (when (or (inText.contains text) (outText.contains text))
+                    (return idx))))
+        null))

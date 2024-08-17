@@ -14,6 +14,7 @@ enum Message {
     RequestFullUpdate;
     RequestFindText;
     RequestFindNext;
+    RequestFindPrevious;
     FoundText(blockIndex:Int);
     Initialize(blocks:Array<Block>);
     ConfirmManualEdit(blockIndex:Int);
