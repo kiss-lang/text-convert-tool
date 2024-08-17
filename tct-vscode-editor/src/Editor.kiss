@@ -308,6 +308,12 @@
                     ("N"
                         (onSuccess null)
                         (postMessage RequestFindPrevious))
+                    ("<"
+                        (onSuccess null)
+                        (postMessage (RequestLineNumber false)))
+                    (">"
+                        (onSuccess null)
+                        (postMessage (RequestLineNumber true)))
                     (otherwise)))
             // key without modifier
             (true

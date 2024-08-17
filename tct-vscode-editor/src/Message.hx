@@ -15,6 +15,7 @@ enum Message {
     RequestFindText;
     RequestFindNext;
     RequestFindPrevious;
+    RequestLineNumber(output:Bool);
     FoundText(blockIndex:Int);
     Initialize(blocks:Array<Block>);
     ConfirmManualEdit(blockIndex:Int);

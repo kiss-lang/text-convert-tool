@@ -261,3 +261,13 @@
                 (when (or (inText.contains text) (outText.contains text))
                     (return idx))))
         null))
+
+// Return the block where a line number can be found, in either the input or output file
+(method :Null<Int> findLineNumber [:Int number :Bool output]
+    (localVar &mut lineNumber 1)
+    (doFor [idx block] (enumerate blocks)
+        (let [blockText (if output block.outText block.inText)]
+            (+= lineNumber .length (blockText.split "\n") -1)
+            (when (>= lineNumber number)
+                (return idx))))
+    null)

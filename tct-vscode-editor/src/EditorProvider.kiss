@@ -55,6 +55,12 @@
 						(findNext))
 				})
 			(reportRequest true))
+		(localFunction :Void findLineNumber [number output]
+			(ifLet [idx (project.findLineNumber number output)]
+					(postMessage (FoundText idx))
+				(warningMessage "Line number $number not found in $(if output "output file" "input file")"))
+			(reportRequest true))
+
 		(prop &mut :Bool lastVisible false)
 		(webviewPanel.onDidChangeViewState
 			->e {
@@ -136,6 +142,9 @@
 								(findNext))
 							(RequestFindPrevious
 								(findPrevious))
+							((RequestLineNumber output)
+								(awaitLet [number (inputBox)]
+									(findLineNumber (Std.parseInt number) output)))
 							((ConfirmManualEdit blockIdx)
 								(let [validConversions (project.validConversions blockIdx ->m (errorMessage m))]
 									(cond
