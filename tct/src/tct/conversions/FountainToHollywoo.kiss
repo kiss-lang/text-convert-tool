@@ -97,7 +97,7 @@
         (new tct.NamesConversion "${thing} characters" "fountain" "hollywoo"
             ->[block names] (isScreenLine block)
             ->[_ names] (+ 
-                            (.join (for name names "$(if containsPlaceholders "// " "") $(thing.toUpperCase)CHARACTER \"${name}\" $args") "\n")
+                            (.join (for name names "$(if containsPlaceholders "// " "")$(thing.toUpperCase)CHARACTER \"${name}\" $args") "\n")
                             "\n"))))
 
 (doWithCharacters "Add" "<position key> <facing>" true)
