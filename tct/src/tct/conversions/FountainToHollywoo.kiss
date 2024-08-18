@@ -96,9 +96,9 @@
     (FileConversionProject.registerConversion
         (new tct.NamesConversion "${thing} characters" "fountain" "hollywoo"
             ->[block names] (isScreenLine block)
-            ->[_ names] (+ (if containsPlaceholders "// " "")
-                        (.join (for name names "$(thing.toUpperCase)CHARACTER \"${name}\" $args") "\n")
-                        "\n"))))
+            ->[_ names] (+ 
+                            (.join (for name names "$(if containsPlaceholders "// " "") $(thing.toUpperCase)CHARACTER \"${name}\" $args") "\n")
+                            "\n"))))
 
 (doWithCharacters "Add" "<position key> <facing>" true)
 (doWithCharacters "Move" "<position key> <facing>" true)
