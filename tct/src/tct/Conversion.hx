@@ -5,5 +5,6 @@ typedef Conversion = {
     outputType:String,
     canConvert:String->Bool,
     convert:String->String,
-    name:String
+    name:String,
+    ?neverAutomatic:Bool
 };

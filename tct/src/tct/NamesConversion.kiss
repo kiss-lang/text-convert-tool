@@ -2,7 +2,8 @@
             &prop &mut :String sourceType
             &prop &mut :String outputType
             :(String,Array<String>)->Bool canConvertNames
-            :(String,Array<String>)->String convertBlock]
+            :(String,Array<String>)->String convertBlock
+            &opt :Bool _neverAutomatic]
     [
         &mut :String->Bool canConvert ->block {
             (Main.updateNameExceptions)
@@ -12,4 +13,5 @@
             (Main.updateNameExceptions)
             (let [names (Names.findNames block)] (convertBlock block names))
         }
+        &mut :Null<Bool> neverAutomatic _neverAutomatic
     ])

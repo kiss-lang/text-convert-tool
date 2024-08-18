@@ -127,7 +127,8 @@
 (FileConversionProject.registerConversion
     (new tct.StreamConversion "Delay" "fountain" "hollywoo"
         ->stream (isScreenLine stream.content)
-        ->stream "DELAY ##\"$(stream.content.trim)\"##\n"))
+        ->stream "DELAY ##\"$(stream.content.trim)\"##\n"
+        true))
 
 (function newSceneConversion [engine command setArgs newCamera containsPlaceholders]
     (FileConversionProject.registerConversion

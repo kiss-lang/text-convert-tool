@@ -79,7 +79,7 @@
 		(dictSet fullUpdateFunctions document.fileName requestFullUpdate)
 		
 		(localFunction :Void chooseConversion [blockIdx]
-			(let [validConversions (project.validConversions blockIdx ->m (errorMessage m))]
+			(let [validConversions (project.validConversions blockIdx false ->m (errorMessage m))]
 				(cond
 					((= 1 (count validConversions))
 						(let [text (first (collect (validConversions.iterator)))]
@@ -146,7 +146,7 @@
 								(awaitLet [number (inputBox)]
 									(findLineNumber (Std.parseInt number) output)))
 							((ConfirmManualEdit blockIdx)
-								(let [validConversions (project.validConversions blockIdx ->m (errorMessage m))]
+								(let [validConversions (project.validConversions blockIdx true ->m (errorMessage m))]
 									(cond
 										((= 0 (count validConversions))
 											(postMessage YesManualEdit))

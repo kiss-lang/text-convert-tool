@@ -210,7 +210,7 @@
 (function registerConversion [:Conversion c]
     (_conversions.push c))
 
-(method :Map<String,String> validConversions [index :String->Dynamic reportError]
+(method :Map<String,String> validConversions [index :Bool automatic :String->Dynamic reportError]
     (let [sourceFile inFile
             outputFile outFile
             block (nth blocks index)
@@ -219,6 +219,7 @@
         (doFor c _conversions
             (case c
                 ((when (and
+                            (or !automatic !c.neverAutomatic)
                             (= sourceType (sourceFile.extension))
                             (= outputType (outputFile.extension))
                             (canConvert source))
@@ -232,7 +233,7 @@
 (method :Void fullAutoConvert [:String->Dynamic reportError]
     (doFor [idx block] (enumerate blocks)
         (when (or block.locked block.outText) (continue))
-        (let [vc (validConversions idx reportError)]
+        (let [vc (validConversions idx true reportError)]
             (when (= 1 (count vc))
                 (doFor =>conversionName text vc
                     (print "Converting block $(+ idx 1)/${blocks.length}")
