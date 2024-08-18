@@ -5,21 +5,24 @@
 (var &mut :Element table)
 (var &mut :Array<Block> tctBlocks)
 (var &mut :String->Void doOnSuccess null)
+(var &mut :String waitingFor)
 
 (var &mut :Dynamic currentEditor null)
 
-(defMacro onSuccess [&body body]
+(defMacro onSuccess [label &body body]
     `{
         (when doOnSuccess
-            (postMessage (Error "still waiting for success of previous edit request!"))
+            (postMessage (Error (+ "still waiting for success of previous edit request: " waitingFor)))
             (return))
+        (set waitingFor ,label)
         (set doOnSuccess ->:Void _ {,@body})
     })
 (defMacro onConvert [argList &body body]
     `{
         (when doOnSuccess
-            (postMessage (Error "still waiting for success of previous edit request!"))
+            (postMessage (Error (+ "still waiting for success of previous edit request:" waitingFor)))
             (return))
+        (set waitingFor "conversion")
         (set doOnSuccess (lambda ,argList ,@body))
     })
 
@@ -94,6 +97,7 @@
                     ->_ {
                         (set currentEditor null)
                         (onSuccess
+                            "save block change"
                             (if outText
                                     (set block.outText (e.getValue))
                                 (set block.inText (e.getValue)))
@@ -156,7 +160,7 @@
                 (tdDelete.appendChild tdDeleteLink)
                 (tdDeleteLink.addEventListener "click"
                     ->(let [idx (tctBlocks.indexOf block)]
-                        (onSuccess
+                        (onSuccess "delete block"
                             (tctBlocks.splice idx 1)
                             (table.removeChild tr))
                         (postMessage (RequestDelete idx))))
@@ -168,7 +172,7 @@
                     (tdLockedCheckBox.setAttribute "checked" "true"))
                 (tdLockedCheckBox.addEventListener "change"
                     ->(let [idx (tctBlocks.indexOf block)]
-                        (onSuccess
+                        (onSuccess "toggle block lock"
                             (set block.locked !block.locked))
                         (postMessage (RequestToggleLock idx))))
 
@@ -178,7 +182,7 @@
                         (td.appendChild link)
                         (link.addEventListener "click"
                             ->(let [idx (+ (tctBlocks.indexOf block) idxOffset)]
-                                (onSuccess
+                                (onSuccess "add block"
                                     // NOTE This block object has a blank id because we shouldn't
                                     // need to reference ids in the editor context:
                                     (let [newBlock
@@ -202,7 +206,7 @@
                 (tdJoin.appendChild tdJoinLink)
                 (tdJoinLink.addEventListener "click"
                     ->(let [idx (tctBlocks.indexOf block)]
-                        (onSuccess
+                        (onSuccess "join block down"
                             (postMessage RequestFullUpdate))
                         (postMessage (RequestJoinDown idx))))
                 
@@ -290,31 +294,32 @@
                 (case e.key
                     // Undo/redo shortcuts:
                     ("z"
-                        (onSuccess
+                        (onSuccess "undo"
                             (postMessage RequestFullUpdate))
                         (postMessage RequestUndo))
                     ("y" 
-                        (onSuccess
+                        (onSuccess "redo"
                             (postMessage RequestFullUpdate))
                         (postMessage RequestRedo))
                     // Find text:
                     ("f"
-                        (onSuccess null)
+                        (onSuccess "find text" null)
                         (postMessage RequestFindText))
                     (otherwise)))
             // Shift+key
             (e.shiftKey
-                (case e.key
-                    ("N"
-                        (onSuccess null)
-                        (postMessage RequestFindPrevious))
-                    ("<"
-                        (onSuccess null)
-                        (postMessage (RequestLineNumber false)))
-                    (">"
-                        (onSuccess null)
-                        (postMessage (RequestLineNumber true)))
-                    (otherwise)))
+                (unless (currentEditor?.hasTextFocus)
+                    (case e.key
+                        ("N"
+                            (onSuccess "find previous" null)
+                            (postMessage RequestFindPrevious))
+                        ("<"
+                            (onSuccess "go to input line number" null)
+                            (postMessage (RequestLineNumber false)))
+                        (">"
+                            (onSuccess "go to output line number" null)
+                            (postMessage (RequestLineNumber true)))
+                        (otherwise))))
             // key without modifier
             (true
                 (case e.key
@@ -322,10 +327,13 @@
                         // Escape => Close monaco editor and save its block
                         (when (currentEditor?.hasTextFocus)
                             (document.activeElement.blur)))
-                    ("n"
-                        (onSuccess null)
-                        (postMessage RequestFindNext))
-                    (otherwise)))))
+                    (otherwise
+                        (unless (currentEditor?.hasTextFocus)
+                            (case e.key
+                                ("n"
+                                    (onSuccess "go to next" null)
+                                    (postMessage RequestFindNext))
+                                (otherwise))))))))
 
     (set Prelude.makeAwaitLetDefaultCatch
         ->binding
