@@ -16,4 +16,4 @@ Main
 -js bin/editor.js
 --main Editor
 
--cmd npx vsce package
+-cmd npx @vscode/vsce package
