@@ -1,14 +1,15 @@
 // TCT Conversions for Fountain files -> Hollywoo scripts
+// and Fountain -> Org
 
 (function isUpperCase [s]
     (= s (s.toUpperCase)))
 
 (var :Array<String> specialSpeechTags [])
 
-(function specialSpeech [name parenTag hmethod]
+(function specialSpeech [name parenTag hmethod &opt org]
     (specialSpeechTags.push parenTag)
     (FileConversionProject.registerConversion
-        (new tct.StreamConversion name "fountain" "hollywoo"
+        (new tct.StreamConversion name "fountain" (if org "org" "hollywoo")
             ->stream
                 ?(whenLet [(Some name) (stream.takeUntilAndDrop " (${parenTag}")]
                     (doFor tag scriptTags (when (name.startsWith tag) (return false)))
@@ -21,61 +22,82 @@
                         (let [wryly (ifLet [(Some w) (stream.takeBetween "(" ")\n")] w "")
                                 line (ifLet [(Some l) (stream.takeLine)] (l.trim) (break))]
                             (when line
-                                (+= output "$hmethod \"${name}\" \"${wryly}\" ##\"${line}\"##\n")
-                                (+= output "// WATCHMODEDELAY ##\"Delay after ${line}\"##\n")
-                                )))
+                                (cond
+                                    (org
+                                        (+= output "*** TODO Record '${line}' :${name}:"))
+                                    (true
+                                        (+= output "$hmethod \"${name}\" \"${wryly}\" ##\"${line}\"##\n")
+                                        (+= output "// WATCHMODEDELAY ##\"Delay after ${line}\"##\n"))))))
                     output))))
 
 (specialSpeech "On Phone Speech" "O.P." "ONPHONESPEECH")
 (specialSpeech "VoiceOver Speech" "V.O." "VOICEOVER")
 (specialSpeech "Off-Screen Speech" "O.S." "OFFSCREENSPEECH")
 
+// Generate Org TODOs
+(specialSpeech "On Phone Speech" "O.P." "ONPHONESPEECH" true)
+(specialSpeech "VoiceOver Speech" "V.O." "VOICEOVER" true)
+(specialSpeech "Off-Screen Speech" "O.S." "OFFSCREENSPEECH" true)
+
 (var scriptTags ["INSERT"])
 
-(FileConversionProject.registerConversion
-    (new tct.StreamConversion "Normal Speech" "fountain" "hollywoo"
-        ->stream ?(whenLet [(Some name) (stream.takeLine)]
-                        (doFor tag scriptTags (when (name.startsWith tag) (return false)))
-                        (doFor tag specialSpeechTags
-                            (whenLet [(Some _) (indexOf name "(${tag}")] (return false)))
-                        (and (isUpperCase name) {(stream.dropWhitespace) !(stream.isEmpty)}))
-        ->stream
-            (let [name (whenLet [(Some name) (stream.takeLine)] (.trim (name.replace "(CONT'D)" "")))
-                    &mut output []]
-                (loop
-                    (let [wryly (ifLet [(Some w) (stream.takeBetween "(" ")\n")] w "")
-                            line (ifLet [(Some l) (stream.takeLine)] (l.trim) (break))]
-                        (when line
-                            (output.push "NORMALSPEECH \"${name}\" \"${wryly}\" ##\"${line}\"##")
-                            (output.push "// WATCHMODEDELAY ##\"Delay after ${line}\"##"))))
-                (output.push "")
-                (output.join "\n"))))
+(function normalSpeech [org]
+    (FileConversionProject.registerConversion
+        (new tct.StreamConversion "Normal Speech" "fountain" (if org "org" "hollywoo")
+            ->stream ?(whenLet [(Some name) (stream.takeLine)]
+                            (doFor tag scriptTags (when (name.startsWith tag) (return false)))
+                            (doFor tag specialSpeechTags
+                                (whenLet [(Some _) (indexOf name "(${tag}")] (return false)))
+                            (and (isUpperCase name) {(stream.dropWhitespace) !(stream.isEmpty)}))
+            ->stream
+                (let [name (whenLet [(Some name) (stream.takeLine)] (.trim (name.replace "(CONT'D)" "")))
+                        &mut output []]
+                    (loop
+                        (let [wryly (ifLet [(Some w) (stream.takeBetween "(" ")\n")] w "")
+                                line (ifLet [(Some l) (stream.takeLine)] (l.trim) (break))]
+                            (when line
+                                (cond
+                                    (org
+                                        (output.push "*** TODO Record '${line}' :${name}:"))
+                                    (true
+                                        (output.push "NORMALSPEECH \"${name}\" \"${wryly}\" ##\"${line}\"##")
+                                        (output.push "// WATCHMODEDELAY ##\"Delay after ${line}\"##"))))))
+                    (output.push "")
+                    (output.join "\n")))))
 
-(FileConversionProject.registerConversion
-    (new tct.StreamConversion "Custom Speech" "fountain" "hollywoo"
-        ->stream ?(whenLet [(Some name) (stream.takeLine)]
-                        (doFor tag scriptTags (when (name.startsWith tag) (return false)))
-                        (doFor tag specialSpeechTags
-                            (whenLet [(Some _) (indexOf name "(${tag}")] (return false)))
-                        (let [name (.trim (name.replace "(CONT'D)" ""))
-                                hasParen (name.contains "(")
-                                name (.trim (name.substr 0 (name.indexOf "(")))]
-                            (and (isUpperCase name) {(stream.dropWhitespace) !(stream.isEmpty)} hasParen)))
+(normalSpeech false)
+(normalSpeech true)
 
-        ->stream
-            (let [nameAndParenTag (whenLet [(Some name) (stream.takeLine)] (.trim (name.replace "(CONT'D)" "")))
-                    nameAndParenTagStream (kiss.Stream.fromString nameAndParenTag)
-                    name (.trim (nameAndParenTagStream.expect "name" ->(nameAndParenTagStream.takeUntilAndDrop "(")))
-                    parenTag (nameAndParenTagStream.expect "custom dialog type" ->(nameAndParenTagStream.takeUntilAndDrop ")"))
-                    &mut output []]
-                (loop
-                    (let [wryly (ifLet [(Some w) (stream.takeBetween "(" ")\n")] w "")
-                            line (ifLet [(Some l) (stream.takeLine)] (l.trim) (break))]
-                        (when line
-                            (output.push "// CUSTOMSPEECH \"${parenTag}\" \"${name}\" \"${wryly}\" <args...> ##\"${line}\"##")
-                            (output.push "// WATCHMODEDELAY ##\"Delay after ${line}\"##"))))
-                (output.push "")
-                (output.join "\n"))))
+(function customSpeech [org]
+    (FileConversionProject.registerConversion
+        (new tct.StreamConversion "Custom Speech" "fountain" (if org "org" "hollywoo")
+            ->stream ?(whenLet [(Some name) (stream.takeLine)]
+                            (doFor tag scriptTags (when (name.startsWith tag) (return false)))
+                            (doFor tag specialSpeechTags
+                                (whenLet [(Some _) (indexOf name "(${tag}")] (return false)))
+                            (let [name (.trim (name.replace "(CONT'D)" ""))
+                                    hasParen (name.contains "(")
+                                    name (.trim (name.substr 0 (name.indexOf "(")))]
+                                (and (isUpperCase name) {(stream.dropWhitespace) !(stream.isEmpty)} hasParen)))
+
+            ->stream
+                (let [nameAndParenTag (whenLet [(Some name) (stream.takeLine)] (.trim (name.replace "(CONT'D)" "")))
+                        nameAndParenTagStream (kiss.Stream.fromString nameAndParenTag)
+                        name (.trim (nameAndParenTagStream.expect "name" ->(nameAndParenTagStream.takeUntilAndDrop "(")))
+                        parenTag (nameAndParenTagStream.expect "custom dialog type" ->(nameAndParenTagStream.takeUntilAndDrop ")"))
+                        &mut output []]
+                    (loop
+                        (let [wryly (ifLet [(Some w) (stream.takeBetween "(" ")\n")] w "")
+                                line (ifLet [(Some l) (stream.takeLine)] (l.trim) (break))]
+                            (when line
+                                (cond
+                                    (org
+                                        (output.push "*** TODO Record/implement '${line}' :${name}:"))
+                                    (true
+                                        (output.push "// CUSTOMSPEECH \"${parenTag}\" \"${name}\" \"${wryly}\" <args...> ##\"${line}\"##")
+                                        (output.push "// WATCHMODEDELAY ##\"Delay after ${line}\"##"))))))
+                    (output.push "")
+                    (output.join "\n")))))
 
 (FileConversionProject.registerConversion
     (new tct.StreamConversion "Label" "fountain" "hollywoo"
