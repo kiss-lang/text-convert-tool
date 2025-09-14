@@ -12,7 +12,7 @@
 	"dependencies": {
 		"monaco-editor": "^0.38.0"
 	},
-	"publisher": "nqnstudios",
+	"publisher": "kiss-lang",
 	"contributes": {
 		"keybindings": [
 			{
@@ -70,9 +70,7 @@
 	"devDependencies": {
 		"@vscode/vsce": "^2.15.0"
 	},
+	"activationEvents": [],
 	"version": "0.0.0",
-	"activationEvents": [
-		"*"
-	],
-	"displayName": ""
+	"displayName": "Text Convert Tool"
 }
